@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 // file imports
 import 'widgets/AppDrawer.dart';
-import 'Screens/AuthScreen.dart';
+import 'Screens/auth_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -10,8 +10,6 @@ void main() {
 
 class MyApp extends StatelessWidget {
   @override
-  var color1 = Color.fromRGBO(102, 102, 255, 80);
-  var color2 = Color.fromRGBO(102, 178, 255, 20);
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "PetKeeper",
@@ -20,7 +18,10 @@ class MyApp extends StatelessWidget {
           gradient: (LinearGradient(
               begin: Alignment.topRight,
               end: Alignment.bottomLeft,
-              colors: [color1, color2])),
+              colors: [
+                Color.fromRGBO(102, 102, 255, 80),
+                Color.fromRGBO(102, 178, 255, 20)
+              ])),
         ),
         child: AuthScreen(),
       ),
