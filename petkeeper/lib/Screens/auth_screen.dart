@@ -9,6 +9,7 @@ import '../widgets/AppDrawer.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key}) : super(key: key);
+  static const routename = '/auth-screen';
   @override
   _AuthScreenState createState() => _AuthScreenState();
 }

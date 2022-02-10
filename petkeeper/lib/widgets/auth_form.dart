@@ -58,57 +58,79 @@ class _AuthFormState extends State<AuthForm> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextFormField(
-                    validator: (value) {
-                      if (value == null || !value.contains('@')) {
-                        return 'Please enter a valid Email address.';
-                      }
-                      return null;
-                    },
-                    decoration: const InputDecoration(labelText: 'Email'),
-                    onSaved: (value) {
-                      _userEmail = value;
-                    },
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  TextFormField(
-                      validator: (value) {
-                        if (value == null || value.length < 7) {
-                          return 'Please enter a Password that is at least 7 characters long.';
-                        }
-                        return null;
-                      },
-                      obscureText: true,
-                      decoration: const InputDecoration(labelText: 'Password'),
-                      onSaved: (value) {
-                        _userPassword = value;
-                      }),
                   if (!_isLogin)
                     TextFormField(
-                      validator: (value) {
-                        if (value == null || value.length < 7) {
-                          return 'Please enter a Password that is at least 7 characters long.';
-                        }
-                        return null;
-                      },
-                      obscureText: true,
-                      decoration:
-                          const InputDecoration(labelText: 'Confirm Password'),
-                    ),
-                  if (!_isLogin)
-                    TextFormField(
+                        key: const ValueKey('username'),
                         validator: (value) {
                           if (value == null) {
                             return 'Please enter a Username.';
                           }
                           return null;
                         },
-                        decoration:
-                            const InputDecoration(labelText: 'Username'),
+                        decoration: const InputDecoration(
+                            labelText: 'Username',
+                            labelStyle: TextStyle(color: Colors.white),
+                            enabledBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white))),
+                        style: const TextStyle(color: Colors.white),
                         onSaved: (value) {
                           _userName = value;
                         },
                         keyboardType: TextInputType.name),
+                  TextFormField(
+                    key: const ValueKey('email'),
+                    validator: (value) {
+                      if (value == null || !value.contains('@')) {
+                        return 'Please enter a valid Email address.';
+                      }
+                      return null;
+                    },
+                    decoration: const InputDecoration(
+                        labelText: 'Email',
+                        labelStyle: TextStyle(color: Colors.white),
+                        enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white))),
+                    style: const TextStyle(color: Colors.white),
+                    onSaved: (value) {
+                      _userEmail = value;
+                    },
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  TextFormField(
+                      key: const ValueKey('password'),
+                      validator: (value) {
+                        if (value == null || value.length < 7) {
+                          return 'Please enter a Password that is at least 7 characters long.';
+                        }
+                        return null;
+                      },
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                          labelText: 'Password',
+                          labelStyle: TextStyle(color: Colors.white),
+                          enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.white))),
+                      style: const TextStyle(color: Colors.white),
+                      onSaved: (value) {
+                        _userPassword = value;
+                      }),
+                  if (!_isLogin)
+                    TextFormField(
+                      key: const ValueKey('passwordcheck'),
+                      validator: (value) {
+                        if (value == null || value.length < 7) {
+                          return 'Please enter a Password that is at least 7 characters long.';
+                        }
+                        return null;
+                      },
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                          labelText: 'Confirm Password',
+                          labelStyle: TextStyle(color: Colors.white),
+                          enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.white))),
+                      style: const TextStyle(color: Colors.white),
+                    ),
                   if (!widget.isLoading)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
