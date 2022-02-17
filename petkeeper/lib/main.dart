@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:petkeeper/Screens/new_post_screen.dart';
 // file imports
+import 'Screens/new_post_screen.dart';
 import 'Screens/home_screen.dart';
 import 'widgets/AppDrawer.dart';
 import 'Screens/auth_screen.dart';
