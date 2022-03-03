@@ -1,13 +1,15 @@
+import 'package:flutter/cupertino.dart';
+
 class Post {
-  final String postImage;
+  final Image postImage;
   final String title;
   final String description;
   final int salary;
   final int numberOfPets;
   final int walks;
   final int feeding;
-  final int water;
-  var adress;
+  final int watering;
+  var address;
 
   Post({
     required this.postImage,
@@ -17,7 +19,7 @@ class Post {
     required this.numberOfPets,
     required this.walks,
     required this.feeding,
-    required this.water,
-    this.adress,
+    required this.watering,
+    this.address,
   });
 }
