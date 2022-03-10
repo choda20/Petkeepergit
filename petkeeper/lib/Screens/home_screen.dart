@@ -11,11 +11,11 @@ class homeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('PetKeeper'),
+          title: const Text('PetKeeper'),
         ),
         drawer: AppDrawer(),
         floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.add),
+          child: const Icon(Icons.add),
           onPressed: () {
             Navigator.of(context).pushNamed('/new_post-screen');
           },
@@ -25,7 +25,7 @@ class homeScreen extends StatelessWidget {
                 SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
             itemCount: 1,
             itemBuilder: (BuildContext ctx, index) {
-              return Container(child: Text('helljo'));
+              return Container(child: const Text('helljo'));
             }));
   }
 }

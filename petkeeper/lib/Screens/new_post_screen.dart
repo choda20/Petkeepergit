@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:petkeeper/widgets/post_form.dart';
 
 class NewPost extends StatefulWidget {
   static const routename = '/new_post-screen';
@@ -11,8 +11,6 @@ class NewPost extends StatefulWidget {
 }
 
 class _NewPostState extends State<NewPost> {
-  TextEditingController dateinput = TextEditingController();
-  final _postKey = GlobalKey<FormState>();
   XFile? _storedImage;
   Future<void> _takePicture() async {
     final imageFile = await ImagePicker()
@@ -76,7 +74,7 @@ class _NewPostState extends State<NewPost> {
                   ButtonTheme(
                     child: OutlinedButton.icon(
                       onPressed: _choosePicture,
-                      icon: const Icon(Icons.camera),
+                      icon: const Icon(Icons.folder_open),
                       label: const Text('Choose an image'),
                     ),
                   )
@@ -85,64 +83,7 @@ class _NewPostState extends State<NewPost> {
             ),
             Padding(
               padding: const EdgeInsets.only(left: 10, right: 10),
-              child: Form(
-                key: _postKey,
-                child: Column(
-                  children: [
-                    TextFormField(
-                      decoration: const InputDecoration(
-                          labelText: 'Title',
-                          labelStyle: TextStyle(color: Colors.blue),
-                          enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.blue))),
-                      style: const TextStyle(color: Colors.blue),
-                    ),
-                    TextFormField(
-                      controller: dateinput,
-                      onTap: () async {
-                        DateTimeRange? pickedDate = await showDateRangePicker(
-                            context: context,
-                            firstDate: DateTime.now(),
-                            lastDate: DateTime(3000));
-                        if (pickedDate != null) {
-                          String formattedDate = DateFormat('dd-MM-yyyy')
-                                  .format(pickedDate.start) +
-                              ' to ' +
-                              DateFormat('dd-MM-yyyy').format(pickedDate.end);
-                          setState(() {
-                            dateinput.text = formattedDate;
-                          });
-                        }
-                      },
-                      decoration: const InputDecoration(
-                          icon: Icon(Icons.calendar_today),
-                          labelText: 'Dates',
-                          labelStyle: TextStyle(color: Colors.blue),
-                          enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.blue))),
-                      style: const TextStyle(color: Colors.blue),
-                    ),
-                    TextFormField(
-                      decoration: const InputDecoration(
-                          icon: Icon(Icons.monetization_on),
-                          labelText: 'Salary(USD\$)',
-                          labelStyle: TextStyle(color: Colors.blue),
-                          enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.blue))),
-                      style: const TextStyle(color: Colors.blue),
-                      keyboardType: TextInputType.number,
-                    ),
-                    TextFormField(
-                      decoration: const InputDecoration(
-                          labelText: 'Job Description',
-                          labelStyle: TextStyle(color: Colors.blue),
-                          enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.blue))),
-                      style: const TextStyle(color: Colors.blue),
-                    ), FormField(builder: (FormFieldState state) {return InputDecoration()})
-                  ],
-                ),
-              ),
+              child: PostForm(),
             )
           ],
         ),
