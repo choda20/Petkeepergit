@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:location/location.dart' as loc;
 
 class LocationInput extends StatefulWidget {
   @override
@@ -7,6 +9,15 @@ class LocationInput extends StatefulWidget {
 
 class _LocationInputState extends State<LocationInput> {
   String? _previewImageurl;
+  String? locationAdress = null;
+  Future<void> _getCurrentUserLocation() async {
+    final locData = await loc.Location().getLocation();
+    setState(() async {
+      List<Placemark> loca =
+          await placemarkFromCoordinates(locData.latitude!, locData.longitude!);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -28,7 +39,7 @@ class _LocationInputState extends State<LocationInput> {
         ),
         Row(children: [
           OutlinedButton.icon(
-              onPressed: () {},
+              onPressed: _getCurrentUserLocation,
               icon: const Icon(Icons.location_on),
               label: const Text('Current location')),
           OutlinedButton.icon(

@@ -48,11 +48,8 @@ class _NewPostState extends State<NewPost> {
                 _storedImage != null
                     ? Padding(
                         padding: const EdgeInsets.only(top: 5),
-                        child: Image.file(
-                          File(_storedImage!.path),
-                          width: 200,
-                          height: 150,
-                        ),
+                        child: Image.file(File(_storedImage!.path),
+                            width: 200, height: 150),
                       )
                     : Padding(
                         padding: const EdgeInsets.only(top: 5),
@@ -83,7 +80,7 @@ class _NewPostState extends State<NewPost> {
             ),
             Padding(
               padding: const EdgeInsets.only(left: 10, right: 10),
-              child: PostForm(),
+              child: PostForm(_storedImage),
             )
           ],
         ),
