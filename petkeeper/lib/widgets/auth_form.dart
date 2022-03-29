@@ -1,40 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:petkeeper/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 import '../widgets/AppDrawer.dart';
 
 class AuthForm extends StatefulWidget {
-  AuthForm(this.submitFn, this.isLoading);
-
-  final bool isLoading;
-  final void Function(
-    String? name,
-    String? email,
-    String? password,
-    BuildContext ctx,
-    bool isLogin,
-  ) submitFn;
-
   @override
   State<AuthForm> createState() => _AuthFormState();
 }
 
 class _AuthFormState extends State<AuthForm> {
+  var _isLoading = false;
   final _formKey = GlobalKey<FormState>();
   String? _userEmail = '';
   String? _userName = '';
   String? _userPassword = '';
+  String? _userPassword2 = '';
   bool _isLogin = false;
 
   void _trySubmit() {
     final isValid = _formKey.currentState?.validate();
     FocusScope.of(context).unfocus();
-    if (isValid != null && isValid) {
+    if (isValid != null && isValid && _userPassword == _userPassword2) {
       _formKey.currentState?.save();
-      widget.submitFn(_userName!.trim(), _userEmail!.trim(),
-          _userPassword!.trim(), context, _isLogin);
+      setState(() {
+        _isLoading = !_isLoading;
+      });
+      Provider.of<AuthP>(context, listen: false).submitAuthForm(
+        _userName!.trim(),
+        _userEmail!.trim(),
+        _userPassword!.trim(),
+        context,
+        _isLogin,
+        _isLoading,
+      );
+      setState(() {
+        _isLoading = !_isLoading;
+      });
     } else {
-      print('is null');
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Invalid Inputs or unmatching passwords'),
+          backgroundColor: Colors.red));
     }
   }
 
@@ -116,6 +123,9 @@ class _AuthFormState extends State<AuthForm> {
                       }),
                   if (!_isLogin)
                     TextFormField(
+                      onSaved: (value) {
+                        _userPassword2 = value;
+                      },
                       key: const ValueKey('passwordcheck'),
                       validator: (value) {
                         if (value == null || value.length < 7) {
@@ -131,7 +141,7 @@ class _AuthFormState extends State<AuthForm> {
                               borderSide: BorderSide(color: Colors.white))),
                       style: const TextStyle(color: Colors.white),
                     ),
-                  if (!widget.isLoading)
+                  if (!_isLoading)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -157,7 +167,7 @@ class _AuthFormState extends State<AuthForm> {
                         ),
                       ],
                     ),
-                  if (widget.isLoading) CircularProgressIndicator(),
+                  if (_isLoading) const CircularProgressIndicator(),
                 ],
               ),
             ),

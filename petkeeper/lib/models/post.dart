@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 
 class Post {
+  final String userId;
+  final String userEmail;
   final Image postImage;
   final String title;
   final String description;
@@ -9,9 +11,10 @@ class Post {
   final int walks;
   final int feeding;
   final int watering;
-  var address;
 
   Post({
+    required this.userId,
+    required this.userEmail,
     required this.postImage,
     required this.title,
     required this.description,
@@ -20,6 +23,5 @@ class Post {
     required this.walks,
     required this.feeding,
     required this.watering,
-    this.address,
   });
 }

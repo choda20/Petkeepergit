@@ -32,12 +32,6 @@ class _NewPostState extends State<NewPost> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.done),
-            onPressed: () {},
-          )
-        ],
         title: const Text('Create a new post'),
       ),
       body: SingleChildScrollView(
