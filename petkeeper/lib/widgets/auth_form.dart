@@ -16,18 +16,24 @@ class _AuthFormState extends State<AuthForm> {
   String? _userEmail = '';
   String? _userName = '';
   String? _userPassword = '';
-  String? _userPassword2 = '';
   bool _isLogin = false;
+
+  bool verifyPasswords(String? password, String? password2) {
+    if (password == password2 && password != null && password2 != null) {
+      return true;
+    }
+    return false;
+  }
 
   void _trySubmit() {
     final isValid = _formKey.currentState?.validate();
     FocusScope.of(context).unfocus();
-    if (isValid != null && isValid && _userPassword == _userPassword2) {
+    if (isValid != null && isValid) {
       _formKey.currentState?.save();
       setState(() {
         _isLoading = !_isLoading;
       });
-      Provider.of<AuthP>(context, listen: false).submitAuthForm(
+      Provider.of<AuthProvider>(context, listen: false).submitAuthForm(
         _userName!.trim(),
         _userEmail!.trim(),
         _userPassword!.trim(),
@@ -40,8 +46,7 @@ class _AuthFormState extends State<AuthForm> {
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Invalid Inputs or unmatching passwords'),
-          backgroundColor: Colors.red));
+          content: Text('Invalid Inputs'), backgroundColor: Colors.red));
     }
   }
 
@@ -69,7 +74,7 @@ class _AuthFormState extends State<AuthForm> {
                     TextFormField(
                         key: const ValueKey('username'),
                         validator: (value) {
-                          if (value == null) {
+                          if (value == null || value == '') {
                             return 'Please enter a Username.';
                           }
                           return null;
@@ -87,7 +92,9 @@ class _AuthFormState extends State<AuthForm> {
                   TextFormField(
                     key: const ValueKey('email'),
                     validator: (value) {
-                      if (value == null || !value.contains('@')) {
+                      if (value == null ||
+                          !value.contains('@') ||
+                          value == '') {
                         return 'Please enter a valid Email address.';
                       }
                       return null;
@@ -123,11 +130,12 @@ class _AuthFormState extends State<AuthForm> {
                       }),
                   if (!_isLogin)
                     TextFormField(
-                      onSaved: (value) {
-                        _userPassword2 = value;
-                      },
                       key: const ValueKey('passwordcheck'),
                       validator: (value) {
+                        bool check = verifyPasswords(value, _userPassword);
+                        if (check == false) {
+                          return 'Unmatching passwords';
+                        }
                         if (value == null || value.length < 7) {
                           return 'Please enter a Password that is at least 7 characters long.';
                         }

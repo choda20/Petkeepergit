@@ -1,5 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/auth_provider.dart';
 
 class AppDrawer extends StatelessWidget {
   @override
@@ -9,17 +12,18 @@ class AppDrawer extends StatelessWidget {
         children: [
           AppBar(
               automaticallyImplyLeading: false,
-              title: Text(
-                  'Welcome') // add user name to the title when provider is finished
+              title: Text('Welcome ' +
+                  Provider.of<AuthProvider>(context)
+                      .name!) // add user name to the title when provider is finished
               ),
           ListTile(
-            leading: Icon(Icons.account_box),
-            title: Text('Account'),
+            leading: const Icon(Icons.account_box),
+            title: const Text('Account'),
             onTap: () {},
           ),
           ListTile(
-            leading: Icon(Icons.logout),
-            title: Text('Logout'),
+            leading: const Icon(Icons.logout),
+            title: const Text('Logout'),
             onTap: () {
               FirebaseAuth.instance.signOut();
             },

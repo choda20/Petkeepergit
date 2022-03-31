@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (ctx) => AuthP(),
+      create: (ctx) => AuthProvider(),
       child: MaterialApp(
         title: "PetKeeper",
         home: Container(

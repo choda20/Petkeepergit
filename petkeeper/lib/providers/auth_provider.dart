@@ -3,19 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
+import 'package:petkeeper/models/auth.dart';
 
-class AuthP with ChangeNotifier {
+class AuthProvider with ChangeNotifier {
   final _auth = FirebaseAuth.instance;
-  String _name = '';
-  String _email = '';
-
-  String? get name {
-    return _name;
-  }
-
-  String? get email {
-    return _email;
-  }
+  String? _uid;
+  String? _name;
+  String? _email;
 
   void submitAuthForm(
     String? name,
@@ -38,6 +32,7 @@ class AuthP with ChangeNotifier {
           .collection('users')
           .doc(authResult.user!.uid)
           .set({'username': name, 'email': email});
+      _uid = authResult.user!.uid;
     } on PlatformException catch (err) {
       String? message = 'An error has occurred,please check your credentials';
       if (err.message != null) {
@@ -50,5 +45,27 @@ class AuthP with ChangeNotifier {
     } catch (err) {
       print(err);
     }
+  }
+
+  String? get email {
+    fetchExtraUserInfo();
+    return _email;
+  }
+
+  String? get name {
+    fetchExtraUserInfo();
+    return _name;
+  }
+
+  void fetchExtraUserInfo() async {
+    final result = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_uid)
+        .get()
+        .then((snapshot) {
+      _name = snapshot.data()!['username'];
+      _email = snapshot.data()!['email'];
+      notifyListeners();
+    });
   }
 }
