@@ -119,14 +119,35 @@ packages:
       name: firebase_core_platform_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.2.4"
+    version: "4.2.5"
   firebase_core_web:
     dependency: transitive
     description:
       name: firebase_core_web
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.5.4"
+    version: "1.6.2"
+  firebase_storage:
+    dependency: "direct main"
+    description:
+      name: firebase_storage
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "10.2.13"
+  firebase_storage_platform_interface:
+    dependency: transitive
+    description:
+      name: firebase_storage_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "4.1.4"
+  firebase_storage_web:
+    dependency: transitive
+    description:
+      name: firebase_storage_web
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.2.13"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -156,20 +177,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  geocoding:
-    dependency: "direct main"
-    description:
-      name: geocoding
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.4"
-  geocoding_platform_interface:
-    dependency: transitive
-    description:
-      name: geocoding_platform_interface
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.1"
   http:
     dependency: transitive
     description:
@@ -226,27 +233,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.1"
-  location:
-    dependency: "direct main"
-    description:
-      name: location
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "4.3.0"
-  location_platform_interface:
-    dependency: transitive
-    description:
-      name: location_platform_interface
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.3.0"
-  location_web:
-    dependency: transitive
-    description:
-      name: location_web
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "3.1.1"
   matcher:
     dependency: transitive
     description:
@@ -254,6 +240,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.12.11"
+  material_color_utilities:
+    dependency: transitive
+    description:
+      name: material_color_utilities
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.3"
   meta:
     dependency: transitive
     description:
@@ -335,7 +328,7 @@ packages:
       name: test_api
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.3"
+    version: "0.4.8"
   typed_data:
     dependency: transitive
     description:
@@ -351,5 +344,5 @@ packages:
     source: hosted
     version: "2.1.1"
 sdks:
-  dart: ">=2.15.1 <3.0.0"
+  dart: ">=2.16.0 <3.0.0"
   flutter: ">=2.5.0"

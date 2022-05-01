@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/auth_provider.dart';
 import 'package:petkeeper/widgets/post_form.dart';
 
 class NewPost extends StatefulWidget {
@@ -30,6 +33,7 @@ class _NewPostState extends State<NewPost> {
 
   @override
   Widget build(BuildContext context) {
+    final _userId = Provider.of<AuthProvider>(context).user.uid;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create a new post'),
@@ -74,7 +78,7 @@ class _NewPostState extends State<NewPost> {
             ),
             Padding(
               padding: const EdgeInsets.only(left: 10, right: 10),
-              child: PostForm(_storedImage),
+              child: PostForm(_storedImage, _userId),
             )
           ],
         ),

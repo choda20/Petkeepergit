@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:petkeeper/screens/post_screen.dart';
+import 'package:petkeeper/screens/profile_screen.dart';
 import 'package:provider/provider.dart';
 // file imports
 import 'Screens/new_post_screen.dart';
@@ -9,6 +11,7 @@ import 'Screens/home_screen.dart';
 import 'widgets/AppDrawer.dart';
 import 'Screens/auth_screen.dart';
 import 'providers/auth_provider.dart';
+import 'providers/posts_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,8 +22,11 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (ctx) => AuthProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (ctx) => AuthProvider()),
+        ChangeNotifierProvider(create: (ctx) => PostsProvider())
+      ],
       child: MaterialApp(
         title: "PetKeeper",
         home: Container(
@@ -48,6 +54,7 @@ class MyApp extends StatelessWidget {
           AuthScreen.routename: (ctx) => AuthScreen(),
           homeScreen.routename: (ctx) => homeScreen(),
           NewPost.routename: (ctx) => NewPost(),
+          ProfileScreen.routename: (ctx) => ProfileScreen(),
         },
       ),
     );

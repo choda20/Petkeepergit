@@ -26,10 +26,10 @@ class _AuthFormState extends State<AuthForm> {
   }
 
   void _trySubmit() {
+    _formKey.currentState?.save();
     final isValid = _formKey.currentState?.validate();
     FocusScope.of(context).unfocus();
     if (isValid != null && isValid) {
-      _formKey.currentState?.save();
       setState(() {
         _isLoading = !_isLoading;
       });

@@ -1,18 +1,22 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:petkeeper/widgets/location_input.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class PostForm extends StatefulWidget {
-  PostForm(this.postImage);
+  PostForm(this.postImage, this.userId);
 
+  String userId;
   XFile? postImage;
   @override
   State<PostForm> createState() => _PostFormState();
 }
 
 class _PostFormState extends State<PostForm> {
+  final _firebaseStorage = FirebaseStorage.instance;
   String? _jobDescription;
   String? _dates;
   String? _title;
@@ -25,7 +29,7 @@ class _PostFormState extends State<PostForm> {
 
   void trySubmit() async {
     // add user id
-
+    String fileName = widget.postImage!.name;
     final isValid = _postKey.currentState?.validate();
     FocusScope.of(context).unfocus();
     if (isValid != null && isValid && widget.postImage != null) {
@@ -33,13 +37,20 @@ class _PostFormState extends State<PostForm> {
       await FirebaseFirestore.instance.collection('posts').doc().set({
         'title': _title,
         'dates': _dates,
-        'image': widget.postImage.toString(),
+        'image': fileName,
         'salary': _salary,
         'description': _jobDescription,
         'walks': _dropdownWalksValue,
         'feeding': _dropdownFeedingValue,
-        'watering': _dropdownWaterValue
+        'watering': _dropdownWaterValue,
+        'userid': widget.userId
       });
+      var _snapshot = await _firebaseStorage
+          .ref()
+          .child('images/$fileName+$_title')
+          .putFile(File(widget.postImage!.path));
+      var downloadUrl = await _snapshot.ref.getDownloadURL();
+      Navigator.of(context).pop();
     } else {
       print('is null');
     }
