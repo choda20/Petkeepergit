@@ -32,6 +32,23 @@ class AppDrawer extends StatelessWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.assignment),
+                  title: const Text('Listings'),
+                  onTap: () {},
+                ),
+                ListTile(
+                  leading: const Icon(Icons.work),
+                  title: const Text('Jobs'),
+                  onTap: () {},
+                ),
+                ListTile(
+                  leading: const Icon(Icons.chat),
+                  title: const Text('Chats'),
+                  onTap: () {
+                    Navigator.of(context).pushNamed('/chat-screen');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.logout),
                   title: const Text('Logout'),
                   onTap: () {

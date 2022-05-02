@@ -23,11 +23,4 @@ class Post {
     required this.feeding,
     required this.watering,
   });
-
-  Future<String> get imageUrl async {
-    final _firebaseStorage =
-        FirebaseStorage.instance.ref().child('images/$postImage+$title');
-    final imageUrl = await _firebaseStorage.getDownloadURL();
-    return imageUrl.toString();
-  }
 }

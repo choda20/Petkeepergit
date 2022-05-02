@@ -41,6 +41,15 @@ class _homeScreenState extends State<homeScreen> {
                     size: 26.0,
                   ),
                 )),
+            Padding(
+                padding: const EdgeInsets.only(right: 20.0),
+                child: GestureDetector(
+                  onTap: () {},
+                  child: const Icon(
+                    Icons.settings,
+                    size: 26.0,
+                  ),
+                )),
           ],
         ),
         drawer: AppDrawer(),
