@@ -6,12 +6,13 @@ import '../models/post.dart';
 class PostsProvider with ChangeNotifier {
   List<Post> _posts = [];
 
-  void fetchPosts() async {
+  Future<void> fetchPosts() async {
     QuerySnapshot querySnapshot =
         await FirebaseFirestore.instance.collection('posts').get();
     _posts = [];
     for (var doc in querySnapshot.docs) {
       Post newPost = Post(
+          petNum: doc['petNum'],
           userId: doc['userid'],
           dates: doc['dates'],
           postImage: doc['image'],
@@ -27,5 +28,21 @@ class PostsProvider with ChangeNotifier {
 
   List<Post> get post {
     return [..._posts];
+  }
+
+  void addPost(Post newPost) {
+    _posts.add(newPost);
+  }
+
+  List<Post> filterResults(
+      int petNum, int waterNum, int foodNum, int walksNum) {
+    List<Post> filtered = _posts
+        .where((element) =>
+            element.petNum == petNum &&
+            element.feeding == foodNum &&
+            element.walks == walksNum &&
+            element.watering == waterNum)
+        .toList();
+    return filtered;
   }
 }

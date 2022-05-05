@@ -45,7 +45,7 @@ class AppDrawer extends StatelessWidget {
                   leading: const Icon(Icons.chat),
                   title: const Text('Chats'),
                   onTap: () {
-                    Navigator.of(context).pushNamed('/chat-screen');
+                    Navigator.of(context).pushNamed('/chat-list-screen');
                   },
                 ),
                 ListTile(

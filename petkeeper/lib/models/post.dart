@@ -1,6 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-
 class Post {
   final String userId;
   final String dates;
@@ -11,16 +8,17 @@ class Post {
   final int walks;
   final int feeding;
   final int watering;
+  final int petNum;
 
-  Post({
-    required this.userId,
-    required this.dates,
-    required this.postImage,
-    required this.title,
-    required this.description,
-    required this.salary,
-    required this.walks,
-    required this.feeding,
-    required this.watering,
-  });
+  Post(
+      {required this.userId,
+      required this.dates,
+      required this.postImage,
+      required this.title,
+      required this.description,
+      required this.salary,
+      required this.walks,
+      required this.feeding,
+      required this.watering,
+      required this.petNum});
 }

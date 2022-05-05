@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:petkeeper/models/post.dart';
+import 'package:petkeeper/providers/posts_provider.dart';
+import 'package:provider/provider.dart';
 
 class PostForm extends StatefulWidget {
   PostForm(this.postImage, this.userId);
@@ -24,17 +27,18 @@ class _PostFormState extends State<PostForm> {
   int _dropdownWaterValue = 0;
   int _dropdownFeedingValue = 0;
   int _dropdownWalksValue = 0;
+  int _dropdownPetValue = 0;
   TextEditingController dateinput = TextEditingController();
   final _postKey = GlobalKey<FormState>();
 
   void trySubmit() async {
-    // add user id
-    String fileName = widget.postImage!.name;
     final isValid = _postKey.currentState?.validate();
     FocusScope.of(context).unfocus();
     if (isValid != null && isValid && widget.postImage != null) {
+      String fileName = widget.postImage!.name;
       _postKey.currentState?.save();
       await FirebaseFirestore.instance.collection('posts').doc().set({
+        'petNum': _dropdownPetValue,
         'title': _title,
         'dates': _dates,
         'image': fileName,
@@ -49,7 +53,17 @@ class _PostFormState extends State<PostForm> {
           .ref()
           .child('images/$fileName+$_title')
           .putFile(File(widget.postImage!.path));
-      var downloadUrl = await _snapshot.ref.getDownloadURL();
+      Provider.of<PostsProvider>(context, listen: false).addPost(Post(
+          petNum: _dropdownPetValue,
+          userId: widget.userId,
+          dates: _dates!,
+          postImage: fileName,
+          title: _title!,
+          description: _jobDescription!,
+          salary: _salary!,
+          walks: _dropdownWalksValue,
+          feeding: _dropdownFeedingValue,
+          watering: _dropdownWaterValue));
       Navigator.of(context).pop();
     } else {
       print('is null');
@@ -164,6 +178,46 @@ class _PostFormState extends State<PostForm> {
           const Padding(
             padding: EdgeInsets.all(5),
           ),
+          FormField(
+            validator: (value) {
+              if (value == '0') {
+                return 'Please choose a number of pets.';
+              }
+              return null;
+            },
+            builder: (FormFieldState state) {
+              return Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  child: Row(children: [
+                    const SizedBox(width: 5),
+                    const Text('Number of pets',
+                        style: TextStyle(
+                            decorationColor: Colors.blue, fontSize: 17)),
+                    const SizedBox(width: 185),
+                    DropdownButton<int>(
+                        style:
+                            const TextStyle(color: Colors.blue, fontSize: 17),
+                        underline: Container(height: 2, color: Colors.blue),
+                        value: _dropdownPetValue,
+                        items: <int>[0, 1, 2, 3, 4, 5, 6]
+                            .map<DropdownMenuItem<int>>((int value) {
+                          return DropdownMenuItem<int>(
+                            child: Text(value.toString()),
+                            value: value,
+                          );
+                        }).toList(),
+                        onChanged: (newValue) {
+                          setState(() {
+                            _dropdownPetValue = newValue!;
+                          });
+                        }),
+                    const SizedBox(width: 5)
+                  ]));
+            },
+            key: const ValueKey('petNum'),
+          ),
+          const Padding(padding: EdgeInsets.all(5)),
           FormField(
             builder: (FormFieldState state) {
               return Card(
