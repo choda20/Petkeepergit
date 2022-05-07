@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:petkeeper/models/post.dart';
 import 'package:petkeeper/widgets/filter_drawer.dart';
 import 'package:petkeeper/widgets/post_item.dart';
+import 'package:petkeeper/widgets/widget_args/new_post_screen_args.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/post_item.dart';
@@ -17,7 +18,7 @@ class homeScreen extends StatefulWidget {
 }
 
 class _homeScreenState extends State<homeScreen> {
-  late int _dropDownWaterValue;
+  int _dropDownWaterValue = 0;
   @override
   bool _isLoading = true;
   @override
@@ -64,7 +65,7 @@ class _homeScreenState extends State<homeScreen> {
                     itemBuilder: (context) => [
                       PopupMenuItem(
                           child: Row(children: [
-                        const Text('Walks(per day)'),
+                        const Text('Watering(per day)'),
                         DropdownButton<int>(
                             style: const TextStyle(
                                 color: Colors.blue, fontSize: 17),
@@ -92,7 +93,8 @@ class _homeScreenState extends State<homeScreen> {
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.add),
           onPressed: () {
-            Navigator.of(context).pushNamed('/new_post-screen');
+            Navigator.of(context).pushNamed('/new_post-screen',
+                arguments: NewPostScreenArgs(null, false));
           },
         ),
         body: _isLoading
@@ -102,7 +104,7 @@ class _homeScreenState extends State<homeScreen> {
                 padding: const EdgeInsets.only(bottom: 10, top: 10),
                 itemBuilder: (BuildContext ctx, index) {
                   return SizedBox(
-                      height: 150, child: PostItem(postList[index]));
+                      height: 150, child: PostItem(postList[index], false));
                 }));
   }
 }

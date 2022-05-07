@@ -1,8 +1,11 @@
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:petkeeper/widgets/widget_args/new_post_screen_args.dart';
 import '../providers/auth_provider.dart';
 import 'package:petkeeper/widgets/post_form.dart';
 
@@ -33,6 +36,8 @@ class _NewPostState extends State<NewPost> {
 
   @override
   Widget build(BuildContext context) {
+    final args =
+        ModalRoute.of(context)!.settings.arguments as NewPostScreenArgs;
     final _userId = Provider.of<AuthProvider>(context).user.uid;
     return Scaffold(
       appBar: AppBar(
@@ -52,7 +57,7 @@ class _NewPostState extends State<NewPost> {
                     : Padding(
                         padding: const EdgeInsets.only(top: 5),
                         child: Image.network(
-                          'https://www.generationsforpeace.org/wp-content/uploads/2018/03/empty.jpg',
+                          'gs://petkeeper-7a537.appspot.com/empty.jpg',
                           width: 200,
                           height: 150,
                         ),
@@ -78,7 +83,8 @@ class _NewPostState extends State<NewPost> {
             ),
             Padding(
               padding: const EdgeInsets.only(left: 10, right: 10),
-              child: PostForm(_storedImage, _userId),
+              child: PostForm(
+                  _storedImage, _userId, args.isEditing, args.postData),
             )
           ],
         ),

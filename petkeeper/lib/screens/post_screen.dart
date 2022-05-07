@@ -3,45 +3,76 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:petkeeper/models/post.dart';
-import 'package:petkeeper/widgets/widget_args/chat_screen_args.dart';
+import 'package:petkeeper/providers/posts_provider.dart';
+import 'package:petkeeper/deprecated/chat_screen_args.dart';
+import 'package:petkeeper/widgets/widget_args/new_post_screen_args.dart';
 import 'package:petkeeper/widgets/widget_args/post_screen_args.dart';
+import 'package:provider/provider.dart';
 
 class PostScreen extends StatelessWidget {
   static const routename = '/post-screen';
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as PostScreenArgs;
-    String imageUrl = args.postData.postImage;
+
+    String postId = args.postData.postId;
     String title = args.postData.title;
     final _firebaseStorage =
-        FirebaseStorage.instance.ref().child('images/$imageUrl+$title');
+        FirebaseStorage.instance.ref().child('images/$postId');
     return Scaffold(
       appBar: AppBar(
         title: Text(args.postData.title),
-        actions: [
-          Padding(
-              padding: const EdgeInsets.only(right: 20.0),
-              child: GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pushNamed('/profile-screen');
-                  },
-                  child: const Icon(
-                    Icons.person,
-                    size: 30.0,
-                  ))),
-          Padding(
-              padding: const EdgeInsets.only(right: 20.0),
-              child: GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pushNamed('/chat-screen',
-                        arguments: ChatScreenArgs(args.postData.userId,
-                            FirebaseAuth.instance.currentUser!.uid));
-                  },
-                  child: const Icon(
-                    Icons.chat_rounded,
-                    size: 26.0,
-                  ))),
-        ],
+        actions: args.isEditing
+            ? [
+                Padding(
+                    padding: const EdgeInsets.only(right: 20.0),
+                    child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pushNamed('/new_post-screen',
+                              arguments: NewPostScreenArgs(
+                                  args.postData, args.isEditing));
+                        },
+                        child: const Icon(
+                          Icons.edit,
+                          size: 30.0,
+                        ))),
+                Padding(
+                    padding: const EdgeInsets.only(right: 20.0),
+                    child: GestureDetector(
+                        onTap: () {
+                          Provider.of<PostsProvider>(context, listen: false)
+                              .deleteListing(args.postData.postId);
+                          Navigator.of(context).pop();
+                        },
+                        child: const Icon(
+                          Icons.delete,
+                          size: 26.0,
+                        ))),
+              ]
+            : [
+                Padding(
+                    padding: const EdgeInsets.only(right: 20.0),
+                    child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pushNamed('/profile-screen');
+                        },
+                        child: const Icon(
+                          Icons.person,
+                          size: 30.0,
+                        ))),
+                Padding(
+                    padding: const EdgeInsets.only(right: 20.0),
+                    child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pushNamed('/chat-screen',
+                              arguments: ChatScreenArgs(args.postData.userId,
+                                  FirebaseAuth.instance.currentUser!.uid));
+                        },
+                        child: const Icon(
+                          Icons.chat_rounded,
+                          size: 26.0,
+                        ))),
+              ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

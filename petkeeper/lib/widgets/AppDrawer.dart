@@ -19,6 +19,9 @@ class AppDrawer extends StatelessWidget {
         : Drawer(
             child: Column(
               children: [
+                Container(
+                  child: Text('d'),
+                ),
                 AppBar(
                     automaticallyImplyLeading: false,
                     title: Text('Welcome ' +
@@ -34,19 +37,14 @@ class AppDrawer extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Icons.assignment),
                   title: const Text('Listings'),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.of(context).pushNamed('/listings-screen');
+                  },
                 ),
                 ListTile(
                   leading: const Icon(Icons.work),
                   title: const Text('Jobs'),
                   onTap: () {},
-                ),
-                ListTile(
-                  leading: const Icon(Icons.chat),
-                  title: const Text('Chats'),
-                  onTap: () {
-                    Navigator.of(context).pushNamed('/chat-list-screen');
-                  },
                 ),
                 ListTile(
                   leading: const Icon(Icons.logout),

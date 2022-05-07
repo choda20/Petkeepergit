@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:petkeeper/providers/auth_provider.dart';
@@ -17,6 +21,16 @@ class _AuthFormState extends State<AuthForm> {
   String? _userName = '';
   String? _userPassword = '';
   bool _isLogin = false;
+  XFile? _storedImage;
+  Image defaultImage = Image.asset('assets/A4RnHy7isSNmUEaBpbhl.jpg');
+
+  Future<void> _choosePicture() async {
+    final imageFile = await ImagePicker()
+        .pickImage(source: ImageSource.gallery, maxWidth: 250, maxHeight: 250);
+    setState(() {
+      _storedImage = imageFile!;
+    });
+  }
 
   bool verifyPasswords(String? password, String? password2) {
     if (password == password2 && password != null && password2 != null) {
@@ -34,6 +48,9 @@ class _AuthFormState extends State<AuthForm> {
         _isLoading = !_isLoading;
       });
       Provider.of<AuthProvider>(context, listen: false).submitAuthForm(
+        _storedImage == null
+            ? defaultImage
+            : Image.file(File(_storedImage!.path)),
         _userName!.trim(),
         _userEmail!.trim(),
         _userPassword!.trim(),
@@ -54,11 +71,15 @@ class _AuthFormState extends State<AuthForm> {
   Widget build(BuildContext context) {
     return Center(
         child: Column(children: [
-      SizedBox(
-          height: 325,
-          width: 200,
-          child: Image.network(
-              'https://i.pinimg.com/originals/c1/2d/af/c12daffa996683fe1080c809aca58e23.png')),
+      const SizedBox(height: 100),
+      CircleAvatar(
+        child: GestureDetector(onTap: _choosePicture),
+        radius: 100,
+        backgroundImage: _storedImage == null
+            ? defaultImage.image
+            : Image.file(File(_storedImage!.path)).image,
+      ),
+      const SizedBox(height: 25),
       Card(
         color: Colors.transparent,
         margin: const EdgeInsets.only(left: 30, right: 30),

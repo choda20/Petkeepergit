@@ -9,14 +9,14 @@ import '../providers/auth_provider.dart';
 import 'package:petkeeper/models/post.dart';
 
 class PostItem extends StatelessWidget {
-  PostItem(this.postData);
+  PostItem(this.postData, this.isEditing);
   Post postData;
+  bool isEditing;
   @override
   Widget build(BuildContext context) {
-    String imageUrl = postData.postImage;
-    String title = postData.title;
+    String postId = postData.postId;
     final _firebaseStorage =
-        FirebaseStorage.instance.ref().child('images/$imageUrl+$title');
+        FirebaseStorage.instance.ref().child('images/$postId');
     return GestureDetector(
       child: FutureBuilder<String>(
         builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
@@ -48,7 +48,7 @@ class PostItem extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 5),
-                        Text(title,
+                        Text(postData.title,
                             style: const TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 7),
@@ -90,8 +90,8 @@ class PostItem extends StatelessWidget {
         future: _firebaseStorage.getDownloadURL(),
       ),
       onTap: () {
-        Navigator.of(context)
-            .pushNamed('/post-screen', arguments: PostScreenArgs(postData));
+        Navigator.of(context).pushNamed('/post-screen',
+            arguments: PostScreenArgs(postData, isEditing));
       },
     );
   }

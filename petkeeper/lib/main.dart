@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:petkeeper/models/post.dart';
-import 'package:petkeeper/screens/chat_list_screen.dart';
-import 'package:petkeeper/screens/chat_screen.dart';
+import 'package:petkeeper/deprecated/chat_list_screen.dart';
+import 'package:petkeeper/deprecated/chat_screen.dart';
 import 'package:petkeeper/screens/post_screen.dart';
 import 'package:petkeeper/screens/profile_screen.dart';
+import 'package:petkeeper/screens/user_listings_screen.dart';
 import 'package:provider/provider.dart';
 // file imports
 import 'Screens/new_post_screen.dart';
@@ -61,6 +62,7 @@ class MyApp extends StatelessWidget {
           PostScreen.routename: (ctx) => PostScreen(),
           ChatScreen.routename: (ctx) => ChatScreen(),
           ChatListScreen.routename: (ctx) => ChatListScreen(),
+          UserListings.routename: (ctx) => UserListings(),
         },
       ),
     );
