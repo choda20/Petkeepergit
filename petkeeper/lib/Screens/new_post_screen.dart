@@ -57,7 +57,7 @@ class _NewPostState extends State<NewPost> {
                     : Padding(
                         padding: const EdgeInsets.only(top: 5),
                         child: Image.network(
-                          'gs://petkeeper-7a537.appspot.com/empty.jpg',
+                          'https://firebasestorage.googleapis.com/v0/b/petkeeper-7a537.appspot.com/o/empty.jpg?alt=media&token=a653f578-0fff-4ef1-ab35-40fbd355c534',
                           width: 200,
                           height: 150,
                         ),
