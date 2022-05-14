@@ -16,13 +16,19 @@ class UserListings extends StatelessWidget {
     List<Post> userPosts =
         postprovider.where((element) => element.userId == uid).toList();
     return Scaffold(
-      appBar: AppBar(title: const Text('Your listings')),
+      appBar: AppBar(
+          title: const Text('Your listings'),
+          flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                      begin: Alignment.bottomLeft,
+                      end: Alignment.topRight,
+                      colors: <Color>[Color(0xfffe5858), Color(0xffee9617)])))),
       body: ListView.builder(
           itemCount: userPosts.length,
           padding: const EdgeInsets.only(bottom: 10, top: 10),
           itemBuilder: (BuildContext ctx, index) {
-            return SizedBox(
-                height: 150, child: PostItem(userPosts[index], true));
+            return PostItem(userPosts[index], true);
           }),
     );
   }

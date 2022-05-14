@@ -1,7 +1,8 @@
 class Post {
   final String userId;
-  final String postId;
-  String dates;
+  String postId;
+  String startingDate;
+  String endingDate;
   String title;
   String description;
   int salary;
@@ -12,7 +13,8 @@ class Post {
 
   Post({
     required this.userId,
-    required this.dates,
+    required this.startingDate,
+    required this.endingDate,
     required this.title,
     required this.description,
     required this.salary,

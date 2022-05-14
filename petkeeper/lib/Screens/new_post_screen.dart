@@ -41,6 +41,12 @@ class _NewPostState extends State<NewPost> {
     final _userId = Provider.of<AuthProvider>(context).user.uid;
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: Container(
+            decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                    begin: Alignment.bottomLeft,
+                    end: Alignment.topRight,
+                    colors: <Color>[Color(0xfffe5858), Color(0xffee9617)]))),
         title: const Text('Create a new post'),
       ),
       body: SingleChildScrollView(
@@ -52,33 +58,46 @@ class _NewPostState extends State<NewPost> {
                     ? Padding(
                         padding: const EdgeInsets.only(top: 5),
                         child: Image.file(File(_storedImage!.path),
-                            width: 200, height: 150),
+                            fit: BoxFit.cover, width: 200, height: 150),
                       )
                     : Padding(
                         padding: const EdgeInsets.only(top: 5),
-                        child: Image.network(
-                          'https://firebasestorage.googleapis.com/v0/b/petkeeper-7a537.appspot.com/o/empty.jpg?alt=media&token=a653f578-0fff-4ef1-ab35-40fbd355c534',
+                        child: Image.asset(
+                          'assets/A4RnHy7isSNmUEaBpbhl.jpg',
+                          fit: BoxFit.cover,
                           width: 200,
                           height: 150,
                         ),
                       ),
-                Column(children: [
-                  ButtonTheme(
-                    child: OutlinedButton.icon(
-                        onPressed: _takePicture,
-                        icon: const Icon(Icons.camera),
-                        label: _storedImage == null
-                            ? const Text('Take an image')
-                            : const Text('Change image')),
-                  ),
-                  ButtonTheme(
-                    child: OutlinedButton.icon(
-                      onPressed: _choosePicture,
-                      icon: const Icon(Icons.folder_open),
-                      label: const Text('Choose an image'),
+                Padding(
+                  padding: const EdgeInsets.all(17),
+                  child: Column(children: [
+                    ButtonTheme(
+                      child: OutlinedButton.icon(
+                          onPressed: _takePicture,
+                          icon: const Icon(Icons.camera,
+                              color: Color(0xffee9617)),
+                          label: _storedImage == null
+                              ? const Text(
+                                  'Take an image',
+                                  style: TextStyle(color: Color(0xffee9617)),
+                                )
+                              : const Text('Change image',
+                                  style: TextStyle(color: Color(0xffee9617)))),
                     ),
-                  )
-                ]),
+                    ButtonTheme(
+                      child: OutlinedButton.icon(
+                        onPressed: _choosePicture,
+                        icon: const Icon(
+                          Icons.folder_open,
+                          color: Color(0xffee9617),
+                        ),
+                        label: const Text('Choose an image',
+                            style: TextStyle(color: Color(0xffee9617))),
+                      ),
+                    )
+                  ]),
+                ),
               ],
             ),
             Padding(

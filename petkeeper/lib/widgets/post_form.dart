@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:petkeeper/models/post.dart';
+import 'package:petkeeper/providers/auth_provider.dart';
 import 'package:petkeeper/providers/posts_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -20,67 +21,52 @@ class PostForm extends StatefulWidget {
 }
 
 class _PostFormState extends State<PostForm> {
-  final _firebaseStorage = FirebaseStorage.instance;
-  late String postId;
+  String postId = '';
   String _jobDescription = '';
-  String _dates = '';
+  String _startingDate = '';
+  String _endinggDate = '';
   String _title = '';
   int _salary = 0;
   int _dropdownWaterValue = 0;
   int _dropdownFeedingValue = 0;
   int _dropdownWalksValue = 0;
   int _dropdownPetValue = 0;
-  TextEditingController dateinput = TextEditingController();
+  TextEditingController startingDateController = TextEditingController();
+  TextEditingController endingDateController = TextEditingController();
   final _postKey = GlobalKey<FormState>();
 
   void trySubmit() async {
-    final isValid = _postKey.currentState?.validate();
+    bool? isValid = _postKey.currentState?.validate();
     FocusScope.of(context).unfocus();
-    if (isValid != null && isValid && widget.postImage != null) {
-      _postKey.currentState?.save();
+    _postKey.currentState?.save();
+    if (_startingDate == '' || _endinggDate == '') {
+      isValid = false;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Please choose dates'), backgroundColor: Colors.red));
+    }
+    DateTime startingDate = DateTime.parse(_startingDate);
+    DateTime endingDate = DateTime.parse(_endinggDate);
+    if (isValid != null &&
+        isValid &&
+        widget.postImage != null &&
+        startingDate.isBefore(endingDate)) {
       if (widget.isEditing == false) {
-        final docPath = FirebaseFirestore.instance.collection('posts').doc();
-        await docPath.set({
-          'petNum': _dropdownPetValue,
-          'title': _title,
-          'dates': _dates,
-          'salary': _salary,
-          'description': _jobDescription,
-          'walks': _dropdownWalksValue,
-          'feeding': _dropdownFeedingValue,
-          'watering': _dropdownWaterValue,
-          'userid': widget.userId
-        }).then((value) {
-          postId = docPath.id;
-        });
-        await _firebaseStorage
-            .ref()
-            .child('images/$postId')
-            .putFile(File(widget.postImage!.path));
-        Provider.of<PostsProvider>(context, listen: false).addPost(Post(
-            petNum: _dropdownPetValue,
-            postId: postId,
-            userId: widget.userId,
-            dates: _dates,
-            title: _title,
-            description: _jobDescription,
-            salary: _salary,
-            walks: _dropdownWalksValue,
-            feeding: _dropdownFeedingValue,
-            watering: _dropdownWaterValue));
+        Provider.of<PostsProvider>(context, listen: false).addPost(
+            Post(
+                petNum: _dropdownPetValue,
+                postId: postId,
+                userId: widget.userId,
+                startingDate: _startingDate,
+                endingDate: _endinggDate,
+                title: _title,
+                description: _jobDescription,
+                salary: _salary,
+                walks: _dropdownWalksValue,
+                feeding: _dropdownFeedingValue,
+                watering: _dropdownWaterValue),
+            widget.postImage!);
       } else {
         postId = widget.postdata!.postId;
-        await FirebaseFirestore.instance.collection('posts').doc(postId).set({
-          'petNum': _dropdownPetValue,
-          'title': _title,
-          'dates': _dates,
-          'salary': _salary,
-          'description': _jobDescription,
-          'walks': _dropdownWalksValue,
-          'feeding': _dropdownFeedingValue,
-          'watering': _dropdownWaterValue,
-          'userid': widget.userId,
-        });
         Provider.of<PostsProvider>(context, listen: false)
             .replaceImage(widget.postImage!, postId);
         Provider.of<PostsProvider>(context, listen: false).changePost(
@@ -88,7 +74,8 @@ class _PostFormState extends State<PostForm> {
                 petNum: _dropdownPetValue,
                 postId: postId,
                 userId: widget.userId,
-                dates: _dates,
+                startingDate: _startingDate,
+                endingDate: _endinggDate,
                 title: _title,
                 description: _jobDescription,
                 salary: _salary,
@@ -98,23 +85,84 @@ class _PostFormState extends State<PostForm> {
             widget.postdata!.postId);
       }
       Navigator.of(context).pop();
-    } else {
-      print('is null');
+    }
+
+    if (!startingDate.isBefore(endingDate)) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Starting date is after ending date.'),
+          backgroundColor: Colors.red));
+    }
+    if (widget.postImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Please choose an Image'),
+          backgroundColor: Colors.red));
+    }
+    if (isValid == null || !isValid) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Invalid inputs'), backgroundColor: Colors.red));
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    TextFormField DatePicker(int indicator) {
+      return TextFormField(
+        key: indicator == 0
+            ? const ValueKey('Starting Date')
+            : const ValueKey('Ending Date'),
+        validator: (value) {
+          if (value == null) {
+            return 'Please enter a date';
+          }
+          return null;
+        },
+        controller:
+            indicator == 0 ? startingDateController : endingDateController,
+        onTap: () async {
+          DateTime? pickedDate = await showDatePicker(
+              initialDate: indicator == 0
+                  ? DateTime.now()
+                  : DateTime.parse(startingDateController.text),
+              context: context,
+              firstDate: DateTime.now(),
+              lastDate: DateTime(3000));
+          if (pickedDate != null) {
+            String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+            setState(() {
+              indicator == 0
+                  ? startingDateController.text = formattedDate
+                  : endingDateController.text = formattedDate;
+            });
+          }
+        },
+        decoration: InputDecoration(
+            focusedBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: Color(0xffee9617))),
+            icon: const Icon(Icons.calendar_today),
+            labelText: indicator == 0 ? 'Starting date' : 'Ending date',
+            labelStyle: const TextStyle(color: Colors.black),
+            enabledBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: Color(0xffee9617)))),
+        style: const TextStyle(color: Color(0xffee9617)),
+        onSaved: (value) {
+          indicator == 0 ? _startingDate = value! : _endinggDate = value!;
+        },
+        keyboardType: TextInputType.none,
+      );
+    }
+
     if (widget.isEditing == true) {
       _jobDescription = widget.postdata!.description;
-      _dates = widget.postdata!.dates;
+      _startingDate = widget.postdata!.startingDate;
+      _endinggDate = widget.postdata!.endingDate;
       _title = widget.postdata!.title;
       _salary = widget.postdata!.salary;
       _dropdownWaterValue = widget.postdata!.watering;
       _dropdownFeedingValue = widget.postdata!.feeding;
       _dropdownWalksValue = widget.postdata!.walks;
       _dropdownPetValue = widget.postdata!.petNum;
-      dateinput.text = widget.postdata!.dates;
+      startingDateController.text = widget.postdata!.startingDate;
+      endingDateController.text = widget.postdata!.endingDate;
     }
     return Form(
       key: _postKey,
@@ -130,51 +178,21 @@ class _PostFormState extends State<PostForm> {
               return null;
             },
             decoration: const InputDecoration(
+                focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xffee9617))),
                 labelText: 'Title',
                 labelStyle: TextStyle(color: Colors.black),
                 enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blue))),
-            style: const TextStyle(color: Colors.blue),
+                    borderSide: BorderSide(color: Color(0xffee9617)))),
+            style: const TextStyle(color: Color(0xffee9617)),
             onSaved: (value) {
               _title = value!;
             },
           ),
           const Padding(padding: EdgeInsets.all(5)),
-          TextFormField(
-            key: const ValueKey('Dates'),
-            validator: (value) {
-              if (value == null) {
-                return 'Please enter Dates';
-              }
-              return null;
-            },
-            controller: dateinput,
-            onTap: () async {
-              DateTimeRange? pickedDate = await showDateRangePicker(
-                  context: context,
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime(3000));
-              if (pickedDate != null) {
-                String formattedDate =
-                    DateFormat('dd-MM-yyyy').format(pickedDate.start) +
-                        ' to ' +
-                        DateFormat('dd-MM-yyyy').format(pickedDate.end);
-                setState(() {
-                  dateinput.text = formattedDate;
-                });
-              }
-            },
-            decoration: const InputDecoration(
-                icon: Icon(Icons.calendar_today),
-                labelText: 'Dates',
-                labelStyle: TextStyle(color: Colors.black),
-                enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blue))),
-            style: const TextStyle(color: Colors.blue),
-            onSaved: (value) {
-              _dates = value!;
-            },
-          ),
+          DatePicker(0),
+          const Padding(padding: EdgeInsets.all(5)),
+          startingDateController.text == '' ? SizedBox() : DatePicker(1),
           const Padding(padding: EdgeInsets.all(5)),
           TextFormField(
             initialValue: _salary.toString(),
@@ -189,15 +207,20 @@ class _PostFormState extends State<PostForm> {
               if (value == null) {
                 return 'Please enter a salary.';
               }
+              if (int.tryParse(value)! <= 0) {
+                return 'Please enter a number greater then 0';
+              }
               return null;
             },
             decoration: const InputDecoration(
+                focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xffee9617))),
                 icon: Icon(Icons.monetization_on),
                 labelText: 'Salary(USD\$)',
                 labelStyle: TextStyle(color: Colors.black),
                 enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blue))),
-            style: const TextStyle(color: Colors.blue),
+                    borderSide: BorderSide(color: Color(0xffee9617)))),
+            style: const TextStyle(color: Color(0xffee9617)),
             keyboardType: TextInputType.number,
           ),
           const Padding(
@@ -207,11 +230,13 @@ class _PostFormState extends State<PostForm> {
             initialValue: _jobDescription,
             key: const ValueKey('Job Description'),
             decoration: const InputDecoration(
+                focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xffee9617))),
                 labelText: 'Job Description',
                 labelStyle: TextStyle(color: Colors.black),
                 enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blue))),
-            style: const TextStyle(color: Colors.blue),
+                    borderSide: BorderSide(color: Color(0xffee9617)))),
+            style: const TextStyle(color: Color(0xffee9617)),
             onSaved: (value) {
               _jobDescription = value!;
             },
@@ -237,31 +262,32 @@ class _PostFormState extends State<PostForm> {
               return Card(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
-                  child: Row(children: [
-                    const SizedBox(width: 5),
-                    const Text('Number of pets',
-                        style: TextStyle(
-                            decorationColor: Colors.blue, fontSize: 17)),
-                    const SizedBox(width: 185),
-                    DropdownButton<int>(
-                        style:
-                            const TextStyle(color: Colors.blue, fontSize: 17),
-                        underline: Container(height: 2, color: Colors.blue),
-                        value: _dropdownPetValue,
-                        items: <int>[0, 1, 2, 3, 4, 5, 6]
-                            .map<DropdownMenuItem<int>>((int value) {
-                          return DropdownMenuItem<int>(
-                            child: Text(value.toString()),
-                            value: value,
-                          );
-                        }).toList(),
-                        onChanged: (newValue) {
-                          setState(() {
-                            _dropdownPetValue = newValue!;
-                          });
-                        }),
-                    const SizedBox(width: 5)
-                  ]));
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Number of pets',
+                            style: TextStyle(
+                                decorationColor: Color(0xffee9617),
+                                fontSize: 17)),
+                        DropdownButton<int>(
+                            style: const TextStyle(
+                                color: Color(0xffee9617), fontSize: 17),
+                            underline:
+                                Container(height: 2, color: Color(0xffee9617)),
+                            value: _dropdownPetValue,
+                            items: <int>[0, 1, 2, 3, 4, 5, 6]
+                                .map<DropdownMenuItem<int>>((int value) {
+                              return DropdownMenuItem<int>(
+                                child: Text(value.toString()),
+                                value: value,
+                              );
+                            }).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                _dropdownPetValue = newValue!;
+                              });
+                            }),
+                      ]));
             },
             key: const ValueKey('petNum'),
           ),
@@ -272,31 +298,32 @@ class _PostFormState extends State<PostForm> {
               return Card(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
-                  child: Row(children: [
-                    const SizedBox(width: 5),
-                    const Text('Walks(per day)',
-                        style: TextStyle(
-                            decorationColor: Colors.blue, fontSize: 17)),
-                    const SizedBox(width: 200),
-                    DropdownButton<int>(
-                        style:
-                            const TextStyle(color: Colors.blue, fontSize: 17),
-                        underline: Container(height: 2, color: Colors.blue),
-                        value: _dropdownWaterValue,
-                        items: <int>[0, 1, 2, 3, 4, 5, 6]
-                            .map<DropdownMenuItem<int>>((int value) {
-                          return DropdownMenuItem<int>(
-                            child: Text(value.toString()),
-                            value: value,
-                          );
-                        }).toList(),
-                        onChanged: (newValue) {
-                          setState(() {
-                            _dropdownWaterValue = newValue!;
-                          });
-                        }),
-                    const SizedBox(width: 5)
-                  ]));
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Walks(per day)',
+                            style: TextStyle(
+                                decorationColor: Color(0xffee9617),
+                                fontSize: 17)),
+                        DropdownButton<int>(
+                            style: const TextStyle(
+                                color: Color(0xffee9617), fontSize: 17),
+                            underline:
+                                Container(height: 2, color: Color(0xffee9617)),
+                            value: _dropdownWaterValue,
+                            items: <int>[0, 1, 2, 3, 4, 5, 6]
+                                .map<DropdownMenuItem<int>>((int value) {
+                              return DropdownMenuItem<int>(
+                                child: Text(value.toString()),
+                                value: value,
+                              );
+                            }).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                _dropdownWaterValue = newValue!;
+                              });
+                            }),
+                      ]));
             },
             key: const ValueKey('Walks'),
           ),
@@ -307,31 +334,32 @@ class _PostFormState extends State<PostForm> {
               return Card(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
-                  child: Row(children: [
-                    const SizedBox(width: 5),
-                    const Text('Feeding(per day)',
-                        style: TextStyle(
-                            decorationColor: Colors.blue, fontSize: 17)),
-                    const SizedBox(width: 185),
-                    DropdownButton<int>(
-                        style:
-                            const TextStyle(color: Colors.blue, fontSize: 17),
-                        underline: Container(height: 2, color: Colors.blue),
-                        value: _dropdownFeedingValue,
-                        items: <int>[0, 1, 2, 3, 4, 5, 6]
-                            .map<DropdownMenuItem<int>>((int value) {
-                          return DropdownMenuItem<int>(
-                            child: Text(value.toString()),
-                            value: value,
-                          );
-                        }).toList(),
-                        onChanged: (newValue) {
-                          setState(() {
-                            _dropdownFeedingValue = newValue!;
-                          });
-                        }),
-                    const SizedBox(width: 5)
-                  ]));
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Feeding(per day)',
+                            style: TextStyle(
+                                decorationColor: Color(0xffee9617),
+                                fontSize: 17)),
+                        DropdownButton<int>(
+                            style: const TextStyle(
+                                color: Color(0xffee9617), fontSize: 17),
+                            underline:
+                                Container(height: 2, color: Color(0xffee9617)),
+                            value: _dropdownFeedingValue,
+                            items: <int>[0, 1, 2, 3, 4, 5, 6]
+                                .map<DropdownMenuItem<int>>((int value) {
+                              return DropdownMenuItem<int>(
+                                child: Text(value.toString()),
+                                value: value,
+                              );
+                            }).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                _dropdownFeedingValue = newValue!;
+                              });
+                            }),
+                      ]));
             },
             key: const ValueKey('Feeding'),
           ),
@@ -342,39 +370,46 @@ class _PostFormState extends State<PostForm> {
               return Card(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
-                  child: Row(children: [
-                    const SizedBox(width: 5),
-                    const Text('Watering(per day)',
-                        style: TextStyle(
-                            decorationColor: Colors.blue, fontSize: 17)),
-                    const SizedBox(width: 180),
-                    DropdownButton<int>(
-                        style:
-                            const TextStyle(color: Colors.blue, fontSize: 17),
-                        underline: Container(height: 2, color: Colors.blue),
-                        value: _dropdownWalksValue,
-                        items: <int>[0, 1, 2, 3, 4, 5, 6]
-                            .map<DropdownMenuItem<int>>((int value) {
-                          return DropdownMenuItem<int>(
-                            child: Text(value.toString()),
-                            value: value,
-                          );
-                        }).toList(),
-                        onChanged: (newValue) {
-                          setState(() {
-                            _dropdownWalksValue = newValue!;
-                          });
-                        }),
-                    const SizedBox(width: 5)
-                  ]));
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Watering(per day)',
+                            style: TextStyle(
+                                decorationColor: Color(0xffee9617),
+                                fontSize: 17)),
+                        DropdownButton<int>(
+                            style: const TextStyle(
+                                color: Color(0xffee9617), fontSize: 17),
+                            underline:
+                                Container(height: 2, color: Color(0xffee9617)),
+                            value: _dropdownWalksValue,
+                            items: <int>[0, 1, 2, 3, 4, 5, 6]
+                                .map<DropdownMenuItem<int>>((int value) {
+                              return DropdownMenuItem<int>(
+                                child: Text(value.toString()),
+                                value: value,
+                              );
+                            }).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                _dropdownWalksValue = newValue!;
+                              });
+                            }),
+                      ]));
             },
             key: const ValueKey('Watering'),
           ),
           ButtonTheme(
               child: OutlinedButton.icon(
                   onPressed: trySubmit,
-                  icon: const Icon(Icons.done),
-                  label: const Text('Submit')))
+                  icon: const Icon(
+                    Icons.done,
+                    color: Color(0xffee9617),
+                  ),
+                  label: const Text(
+                    'Submit',
+                    style: TextStyle(color: Color(0xffee9617)),
+                  )))
         ],
       ),
     );

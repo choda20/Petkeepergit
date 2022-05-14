@@ -1,33 +1,51 @@
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:petkeeper/models/request.dart';
+import 'package:petkeeper/providers/request_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:simple_gradient_text/simple_gradient_text.dart';
 
+import 'package:petkeeper/widgets/widget_args/profile_screen_args.dart';
+import '../providers/auth_provider.dart';
 import 'package:petkeeper/models/post.dart';
+import 'package:petkeeper/models/user.dart';
 import 'package:petkeeper/providers/posts_provider.dart';
-import 'package:petkeeper/deprecated/chat_screen_args.dart';
+import 'package:petkeeper/providers/user_provider.dart';
 import 'package:petkeeper/widgets/widget_args/new_post_screen_args.dart';
 import 'package:petkeeper/widgets/widget_args/post_screen_args.dart';
-import 'package:provider/provider.dart';
 
 class PostScreen extends StatelessWidget {
   static const routename = '/post-screen';
   @override
   Widget build(BuildContext context) {
+    final request = Provider.of<RequestProvider>(context);
+    final requestlist = Provider.of<RequestProvider>(context).requests;
+    final currentUserId = Provider.of<AuthProvider>(context).user.uid;
     final args = ModalRoute.of(context)!.settings.arguments as PostScreenArgs;
-
+    User poster =
+        Provider.of<UserProvider>(context).getUserData(args.postData.userId);
     String postId = args.postData.postId;
     String title = args.postData.title;
     final _firebaseStorage =
         FirebaseStorage.instance.ref().child('images/$postId');
+
     return Scaffold(
+      backgroundColor: const Color(0xffeaeaea),
       appBar: AppBar(
+        flexibleSpace: Container(
+            decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                    begin: Alignment.bottomLeft,
+                    end: Alignment.topRight,
+                    colors: <Color>[Color(0xfffe5858), Color(0xffee9617)]))),
         title: Text(args.postData.title),
         actions: args.isEditing
             ? [
                 Padding(
-                    padding: const EdgeInsets.only(right: 20.0),
+                    padding: const EdgeInsets.only(right: 15.0),
                     child: GestureDetector(
                         onTap: () {
+                          Navigator.of(context).pop();
                           Navigator.of(context).pushNamed('/new_post-screen',
                               arguments: NewPostScreenArgs(
                                   args.postData, args.isEditing));
@@ -37,7 +55,7 @@ class PostScreen extends StatelessWidget {
                           size: 30.0,
                         ))),
                 Padding(
-                    padding: const EdgeInsets.only(right: 20.0),
+                    padding: const EdgeInsets.only(right: 10.0),
                     child: GestureDetector(
                         onTap: () {
                           Provider.of<PostsProvider>(context, listen: false)
@@ -54,142 +72,250 @@ class PostScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(right: 20.0),
                     child: GestureDetector(
                         onTap: () {
-                          Navigator.of(context).pushNamed('/profile-screen');
+                          Navigator.of(context).pushNamed('/profile-screen',
+                              arguments: ProfileScreenArgs(poster.userId));
                         },
                         child: const Icon(
                           Icons.person,
                           size: 30.0,
                         ))),
-                Padding(
-                    padding: const EdgeInsets.only(right: 20.0),
-                    child: GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).pushNamed('/chat-screen',
-                              arguments: ChatScreenArgs(args.postData.userId,
-                                  FirebaseAuth.instance.currentUser!.uid));
-                        },
-                        child: const Icon(
-                          Icons.chat_rounded,
-                          size: 26.0,
-                        ))),
               ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            FutureBuilder<String>(
-                future: _firebaseStorage.getDownloadURL(),
-                builder:
-                    (BuildContext context, AsyncSnapshot<String> snapshot) {
-                  Widget imageDisplay;
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    imageDisplay = Image.network(snapshot.data.toString());
-                  } else {
-                    imageDisplay = const CircularProgressIndicator();
-                  }
-                  return Container(
-                    height: 200,
-                    width: 200,
-                    child: FittedBox(
-                      fit: BoxFit.fill,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: imageDisplay,
-                      ),
-                    ),
-                  );
-                }),
-            Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 25),
-                  Container(
-                    width: 190,
-                    decoration: BoxDecoration(
-                        border: Border.all(),
-                        borderRadius: BorderRadius.circular(8)),
-                    child: Text(
-                      args.postData.dates,
-                      style: const TextStyle(fontSize: 16),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Row(children: [
+              const SizedBox(width: 5),
+              Padding(
+                padding: const EdgeInsets.all(3.0),
+                child: FutureBuilder<String>(
+                    future: _firebaseStorage.getDownloadURL(),
+                    builder:
+                        (BuildContext context, AsyncSnapshot<String> snapshot) {
+                      Widget imageDisplay;
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        imageDisplay = Image.network(snapshot.data.toString());
+                      } else {
+                        imageDisplay = const CircularProgressIndicator();
+                      }
+                      return SizedBox(
+                        height: 200,
+                        width: 200,
+                        child: FittedBox(
+                          fit: BoxFit.fill,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: imageDisplay,
+                          ),
+                        ),
+                      );
+                    }),
+              ),
+              const SizedBox(width: 10),
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  GradientText(
+                    'Posted by: ',
+                    colors: const [Color(0xfffe5858), Color(0xffee9617)],
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  Text(poster.userName,
+                      style: const TextStyle(
+                          fontSize: 20, color: Color.fromARGB(255, 35, 34, 34)))
+                ]),
+                const SizedBox(height: 9),
+                Row(children: [
+                  GradientText(
+                    'From: ',
+                    colors: const [Color(0xfffe5858), Color(0xffee9617)],
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  Text(args.postData.startingDate,
+                      style: const TextStyle(
+                          fontSize: 20, color: Color.fromARGB(255, 35, 34, 34)))
+                ]),
+                const SizedBox(height: 9),
+                Row(children: [
+                  GradientText(
+                    'To: ',
+                    colors: const [Color(0xfffe5858), Color(0xffee9617)],
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  Text(args.postData.endingDate,
+                      style: const TextStyle(
+                          fontSize: 20, color: Color.fromARGB(255, 35, 34, 34)))
+                ]),
+                const SizedBox(height: 9),
+                Row(children: [
+                  RadiantGradientMask(
+                    child: const Icon(
+                      Icons.monetization_on,
+                      size: 20,
+                      color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 25),
-                  Container(
-                    width: 190,
-                    decoration: BoxDecoration(
-                        border: Border.all(),
-                        borderRadius: BorderRadius.circular(8)),
-                    child: Text(
-                      "Salary: " + args.postData.salary.toString() + '\$',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                  const SizedBox(height: 25),
-                  Container(
-                    width: 190,
-                    decoration: BoxDecoration(
-                        border: Border.all(),
-                        borderRadius: BorderRadius.circular(8)),
-                    child: Text(
-                      "Number of pets: " + args.postData.petNum.toString(),
-                      style: const TextStyle(fontSize: 16),
-                    ),
+                  Text(
+                    " " + args.postData.salary.toString() + '\$',
+                    style: const TextStyle(
+                        fontSize: 20, color: Color.fromARGB(255, 35, 34, 34)),
                   ),
                 ]),
-          ]),
-          const SizedBox(height: 20),
-          const Text('Description',
-              style: TextStyle(fontSize: 25, decoration: TextDecoration.none)),
-          Expanded(
-            flex: 1,
-            child: SingleChildScrollView(
+                const SizedBox(height: 9),
+                Row(children: [
+                  RadiantGradientMask(
+                    child: const Icon(
+                      Icons.pets,
+                      size: 20,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(' ' + args.postData.petNum.toString(),
+                      style: const TextStyle(
+                          fontSize: 20,
+                          color: Color.fromARGB(255, 35, 34, 34))),
+                ]),
+              ]),
+            ]),
+            const SizedBox(height: 10),
+            const Text('Treatment',
+                style: TextStyle(
+                  fontSize: 25,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                )),
+            const SizedBox(height: 15),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              RadiantGradientMask(
+                child: const Icon(
+                  Icons.directions_walk_outlined,
+                  size: 20,
+                  color: Colors.white,
+                ),
+              ),
+              Text(' ' + args.postData.walks.toString() + '(per day)',
+                  style: const TextStyle(
+                      fontSize: 20, color: Color.fromARGB(255, 35, 34, 34))),
+            ]),
+            const SizedBox(height: 10),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              RadiantGradientMask(
+                child: const Icon(
+                  Icons.fastfood,
+                  size: 20,
+                  color: Colors.white,
+                ),
+              ),
+              Text(' ' + args.postData.feeding.toString() + '(per day)',
+                  style: const TextStyle(
+                      fontSize: 20, color: Color.fromARGB(255, 35, 34, 34))),
+            ]),
+            const SizedBox(height: 10),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              RadiantGradientMask(
+                child: const Icon(
+                  Icons.water_drop,
+                  size: 20,
+                  color: Colors.white,
+                ),
+              ),
+              Text(' ' + args.postData.watering.toString() + '(per day)',
+                  style: const TextStyle(
+                      fontSize: 20, color: Color.fromARGB(255, 35, 34, 34))),
+            ]),
+            const SizedBox(height: 15),
+            const Text('Description',
+                style: TextStyle(
+                  fontSize: 25,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                )),
+            const SizedBox(height: 15),
+            SingleChildScrollView(
               child: Text(args.postData.description,
-                  style: const TextStyle(fontSize: 18)),
+                  style: const TextStyle(
+                      fontSize: 20, color: Color.fromARGB(255, 35, 34, 34))),
             ),
-          ),
-          const SizedBox(height: 15),
-          Row(
-            children: [
-              const Expanded(
-                child: Card(
-                    child:
-                        Text('Walks(per day)', style: TextStyle(fontSize: 18))),
+            const SizedBox(height: 15),
+            const Text('Contact information',
+                style: TextStyle(
+                  fontSize: 25,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                )),
+            const SizedBox(height: 15),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              RadiantGradientMask(
+                child: const Icon(
+                  Icons.email,
+                  size: 20,
+                  color: Colors.white,
+                ),
               ),
-              Card(
-                  child: Text(args.postData.walks.toString(),
-                      style: const TextStyle(fontSize: 18)))
-            ],
-          ),
-          const SizedBox(height: 15),
-          Row(
-            children: [
-              const Expanded(
-                child: Card(
-                    child: Text('Feeding(per day)',
-                        style: TextStyle(fontSize: 18))),
+              Text(' ' + poster.email,
+                  style: const TextStyle(
+                      fontSize: 20, color: Color.fromARGB(255, 35, 34, 34))),
+            ]),
+            const SizedBox(height: 10),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              RadiantGradientMask(
+                child: const Icon(
+                  Icons.phone,
+                  size: 20,
+                  color: Colors.white,
+                ),
               ),
-              Card(
-                  child: Text(args.postData.feeding.toString(),
-                      style: const TextStyle(fontSize: 18)))
-            ],
-          ),
-          const SizedBox(height: 15),
-          Row(
-            children: [
-              const Expanded(
-                child: Card(
-                    child: Text('Watering(per day)',
-                        style: TextStyle(fontSize: 18))),
-              ),
-              Card(
-                  child: Text(args.postData.watering.toString(),
-                      style: const TextStyle(fontSize: 18)))
-            ],
-          )
-        ],
+              Text(' ' + poster.phoneNumber,
+                  style: const TextStyle(
+                      fontSize: 20, color: Color.fromARGB(255, 35, 34, 34))),
+            ]),
+            const SizedBox(height: 15),
+            if (currentUserId != poster.userId)
+              request.hasRequested(
+                          currentUserId, poster.userId, args.postData.postId) ==
+                      false
+                  ? ButtonTheme(
+                      child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                              primary: Theme.of(context).primaryColor),
+                          onPressed: () {
+                            print(postId);
+                            request.addRequest(Request(postId, poster.userId,
+                                currentUserId, false, ''));
+                            Navigator.of(context).pop();
+                          },
+                          icon: const Icon(
+                            Icons.done,
+                            color: Colors.white,
+                          ),
+                          label: const Text(
+                            'Apply',
+                            style: TextStyle(color: Colors.white),
+                          )))
+                  : const Text('Already requested',
+                      style: TextStyle(
+                          fontSize: 20, color: Color.fromARGB(255, 35, 34, 34)))
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class RadiantGradientMask extends StatelessWidget {
+  RadiantGradientMask({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ShaderMask(
+      shaderCallback: (bounds) => const RadialGradient(
+        center: Alignment.topCenter,
+        radius: 1,
+        colors: [Color(0xfffe5858), Color(0xffee9617)],
+        tileMode: TileMode.mirror,
+      ).createShader(bounds),
+      child: child,
     );
   }
 }

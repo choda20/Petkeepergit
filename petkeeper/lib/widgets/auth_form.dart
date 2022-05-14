@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
@@ -19,6 +20,7 @@ class _AuthFormState extends State<AuthForm> {
   final _formKey = GlobalKey<FormState>();
   String? _userEmail = '';
   String? _userName = '';
+  String _phoneNumber = '';
   String? _userPassword = '';
   bool _isLogin = false;
   XFile? _storedImage;
@@ -43,16 +45,19 @@ class _AuthFormState extends State<AuthForm> {
     _formKey.currentState?.save();
     final isValid = _formKey.currentState?.validate();
     FocusScope.of(context).unfocus();
-    if (isValid != null && isValid) {
+    if (isValid != null &&
+            isValid &&
+            _storedImage != null &&
+            _isLogin == false ||
+        isValid != null && isValid && _isLogin == true) {
       setState(() {
         _isLoading = !_isLoading;
       });
       Provider.of<AuthProvider>(context, listen: false).submitAuthForm(
-        _storedImage == null
-            ? defaultImage
-            : Image.file(File(_storedImage!.path)),
+        _storedImage,
         _userName!.trim(),
         _userEmail!.trim(),
+        _phoneNumber.trim(),
         _userPassword!.trim(),
         context,
         _isLogin,
@@ -61,148 +66,185 @@ class _AuthFormState extends State<AuthForm> {
       setState(() {
         _isLoading = !_isLoading;
       });
-    } else {
+    }
+    if (_storedImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Please choose an Image'),
+          backgroundColor: Colors.red));
+    }
+    if (isValid == null || !isValid) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Invalid Inputs'), backgroundColor: Colors.red));
     }
   }
 
+  bool isNumeric(String num) {
+    return int.tryParse(num) != null;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-        child: Column(children: [
-      const SizedBox(height: 100),
-      CircleAvatar(
-        child: GestureDetector(onTap: _choosePicture),
-        radius: 100,
-        backgroundImage: _storedImage == null
-            ? defaultImage.image
-            : Image.file(File(_storedImage!.path)).image,
-      ),
-      const SizedBox(height: 25),
-      Card(
-        color: Colors.transparent,
-        margin: const EdgeInsets.only(left: 30, right: 30),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (!_isLogin)
+    return SingleChildScrollView(
+      child: Center(
+          child: Column(children: [
+        const SizedBox(height: 75),
+        !_isLogin
+            ? CircleAvatar(
+                child: GestureDetector(onTap: _choosePicture),
+                radius: 100,
+                backgroundImage: _storedImage == null
+                    ? defaultImage.image
+                    : Image.file(File(_storedImage!.path)).image,
+              )
+            : const SizedBox(height: 150),
+        const SizedBox(height: 25),
+        Card(
+          color: Colors.transparent,
+          margin: const EdgeInsets.only(left: 30, right: 30),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!_isLogin)
+                      TextFormField(
+                          key: const ValueKey('username'),
+                          validator: (value) {
+                            if (value == null || value == '') {
+                              return 'Please enter a Username.';
+                            }
+                            return null;
+                          },
+                          decoration: const InputDecoration(
+                              labelText: 'Username',
+                              labelStyle: TextStyle(color: Colors.white),
+                              enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white))),
+                          style: const TextStyle(color: Colors.white),
+                          onSaved: (value) {
+                            _userName = value;
+                          },
+                          keyboardType: TextInputType.name),
                     TextFormField(
-                        key: const ValueKey('username'),
-                        validator: (value) {
-                          if (value == null || value == '') {
-                            return 'Please enter a Username.';
-                          }
-                          return null;
-                        },
-                        decoration: const InputDecoration(
-                            labelText: 'Username',
-                            labelStyle: TextStyle(color: Colors.white),
-                            enabledBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(color: Colors.white))),
-                        style: const TextStyle(color: Colors.white),
-                        onSaved: (value) {
-                          _userName = value;
-                        },
-                        keyboardType: TextInputType.name),
-                  TextFormField(
-                    key: const ValueKey('email'),
-                    validator: (value) {
-                      if (value == null ||
-                          !value.contains('@') ||
-                          value == '') {
-                        return 'Please enter a valid Email address.';
-                      }
-                      return null;
-                    },
-                    decoration: const InputDecoration(
-                        labelText: 'Email',
-                        labelStyle: TextStyle(color: Colors.white),
-                        enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white))),
-                    style: const TextStyle(color: Colors.white),
-                    onSaved: (value) {
-                      _userEmail = value;
-                    },
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  TextFormField(
-                      key: const ValueKey('password'),
+                      key: const ValueKey('email'),
                       validator: (value) {
-                        if (value == null || value.length < 7) {
-                          return 'Please enter a Password that is at least 7 characters long.';
+                        if (value == null ||
+                            !value.contains('@') ||
+                            value == '') {
+                          return 'Please enter a valid Email address.';
                         }
                         return null;
                       },
-                      obscureText: true,
                       decoration: const InputDecoration(
-                          labelText: 'Password',
+                          labelText: 'Email',
                           labelStyle: TextStyle(color: Colors.white),
                           enabledBorder: UnderlineInputBorder(
                               borderSide: BorderSide(color: Colors.white))),
                       style: const TextStyle(color: Colors.white),
                       onSaved: (value) {
-                        _userPassword = value;
-                      }),
-                  if (!_isLogin)
-                    TextFormField(
-                      key: const ValueKey('passwordcheck'),
-                      validator: (value) {
-                        bool check = verifyPasswords(value, _userPassword);
-                        if (check == false) {
-                          return 'Unmatching passwords';
-                        }
-                        if (value == null || value.length < 7) {
-                          return 'Please enter a Password that is at least 7 characters long.';
-                        }
-                        return null;
+                        _userEmail = value;
                       },
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                          labelText: 'Confirm Password',
-                          labelStyle: TextStyle(color: Colors.white),
-                          enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white))),
-                      style: const TextStyle(color: Colors.white),
+                      keyboardType: TextInputType.emailAddress,
                     ),
-                  if (!_isLoading)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                          style: ButtonStyle(
-                            backgroundColor:
-                                MaterialStateProperty.all(Colors.blue),
-                            shape: MaterialStateProperty.all<
-                                    RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20))),
+                    if (!_isLogin)
+                      TextFormField(
+                        key: const ValueKey('phoneNumber'),
+                        validator: (value) {
+                          if (value == null || !isNumeric(value)) {
+                            return 'Please enter a valid phone number.';
+                          }
+                          return null;
+                        },
+                        decoration: const InputDecoration(
+                            labelText: 'Phone number',
+                            labelStyle: TextStyle(color: Colors.white),
+                            enabledBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white))),
+                        style: const TextStyle(color: Colors.white),
+                        onSaved: (value) {
+                          _phoneNumber = value!;
+                        },
+                        keyboardType: TextInputType.number,
+                      ),
+                    TextFormField(
+                        key: const ValueKey('password'),
+                        validator: (value) {
+                          if (value == null || value.length < 7) {
+                            return 'Please enter a Password that is at least 7 characters long.';
+                          }
+                          return null;
+                        },
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                            labelText: 'Password',
+                            labelStyle: TextStyle(color: Colors.white),
+                            enabledBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white))),
+                        style: const TextStyle(color: Colors.white),
+                        onSaved: (value) {
+                          _userPassword = value;
+                        }),
+                    if (!_isLogin)
+                      TextFormField(
+                        key: const ValueKey('passwordcheck'),
+                        validator: (value) {
+                          bool check = verifyPasswords(value, _userPassword);
+                          if (check == false) {
+                            return 'Unmatching passwords';
+                          }
+                          if (value == null || value.length < 7) {
+                            return 'Please enter a Password that is at least 7 characters long.';
+                          }
+                          return null;
+                        },
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                            labelText: 'Confirm Password',
+                            labelStyle: TextStyle(color: Colors.white),
+                            enabledBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white))),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    if (!_isLoading)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(
+                                  const Color(0xffee9617)),
+                              shape: MaterialStateProperty.all<
+                                      RoundedRectangleBorder>(
+                                  RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20))),
+                            ),
+                            onPressed: _trySubmit,
+                            child: Text(_isLogin ? 'Login' : 'Sign up'),
                           ),
-                          onPressed: _trySubmit,
-                          child: Text(_isLogin ? 'Login' : 'Sign up'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _isLogin = !_isLogin;
-                            });
-                          },
-                          child: Text(_isLogin ? 'Sign up' : 'Login'),
-                        ),
-                      ],
-                    ),
-                  if (_isLoading) const CircularProgressIndicator(),
-                ],
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _isLogin = !_isLogin;
+                              });
+                            },
+                            child: Text(
+                              _isLogin ? 'Sign up' : 'Login',
+                              style: const TextStyle(color: Color(0xffee9617)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    if (_isLoading) const CircularProgressIndicator(),
+                  ],
+                ),
               ),
             ),
           ),
         ),
-      ),
-    ]));
+      ])),
+    );
   }
 }

@@ -18,7 +18,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       drawer: AppDrawer(),
       backgroundColor: Colors.transparent,
       body: AuthForm(),

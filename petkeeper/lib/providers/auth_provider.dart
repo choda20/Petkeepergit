@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,14 +10,16 @@ class AuthProvider with ChangeNotifier {
   final _auth = FirebaseAuth.instance;
   late final User user = _auth.currentUser!;
   late String _uid = user.uid;
-  String? _name;
-  String? _email;
+  late String _name;
+  late String _email;
+  late String _phoneNumber;
 
   void submitAuthForm(
-    Image profilePicture,
-    String? name,
-    String? email,
-    String? password,
+    XFile? profilePicture,
+    String name,
+    String email,
+    String phoneNumber,
+    String password,
     BuildContext ctx,
     bool isLogin,
     bool isLoading,
@@ -27,18 +28,20 @@ class AuthProvider with ChangeNotifier {
     try {
       if (isLogin) {
         authResult = await _auth.signInWithEmailAndPassword(
-            email: email!, password: password!);
+            email: email, password: password);
       } else {
         authResult = await _auth.createUserWithEmailAndPassword(
-            email: email!, password: password!);
+            email: email, password: password);
         await FirebaseFirestore.instance
             .collection('users')
             .doc(authResult.user!.uid)
-            .set({'username': name, 'email': email});
+            .set(
+                {'username': name, 'email': email, 'phoneNumber': phoneNumber});
+        _uid = authResult.user!.uid;
         await FirebaseStorage.instance
-            .ref()
-            .child('profilePictures/$_uid')
-            .putFile(File(profilePicture.toString()));
+            .refFromURL(
+                'gs://petkeeper-7a537.appspot.com/profilePictures/$_uid')
+            .putFile(File(profilePicture!.path));
       }
       _uid = authResult.user!.uid;
     } on PlatformException catch (err) {
@@ -64,9 +67,11 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> fetchExtraUserInfo() async {
+    _uid = FirebaseAuth.instance.currentUser!.uid;
     var snapshot =
         await FirebaseFirestore.instance.collection('users').doc(_uid).get();
     _name = await snapshot.data()!['username'];
     _email = await snapshot.data()!['email'];
+    _phoneNumber = await snapshot.data()!['phoneNumber'];
   }
 }

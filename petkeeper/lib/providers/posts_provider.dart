@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
@@ -19,7 +20,8 @@ class PostsProvider with ChangeNotifier {
           postId: doc.id,
           petNum: doc['petNum'],
           userId: doc['userid'],
-          dates: doc['dates'],
+          startingDate: doc['startingdate'],
+          endingDate: doc['endingdate'],
           title: doc['title'],
           description: doc['description'],
           salary: doc['salary'],
@@ -53,16 +55,38 @@ class PostsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void addPost(Post newPost) {
+  void addPost(Post newPost, XFile postImage) async {
+    late String postId;
+    final docPath = FirebaseFirestore.instance.collection('posts').doc();
+    await docPath.set({
+      'petNum': newPost.petNum,
+      'title': newPost.title,
+      'startingdate': newPost.startingDate,
+      'endingdate': newPost.endingDate,
+      'salary': newPost.salary,
+      'description': newPost.description,
+      'walks': newPost.walks,
+      'feeding': newPost.feeding,
+      'watering': newPost.watering,
+      'userid': newPost.userId
+    }).then((value) {
+      postId = docPath.id;
+    });
+    await FirebaseStorage.instance
+        .ref()
+        .child('images/$postId')
+        .putFile(File(postImage.path));
+    newPost.postId = postId;
     _posts.add(newPost);
     notifyListeners();
   }
 
-  void changePost(Post newPost, String postId) {
+  void changePost(Post newPost, String postId) async {
     final postIndex = _posts.indexWhere((element) {
       return element.postId == postId;
     });
-    _posts[postIndex].dates = newPost.dates;
+    _posts[postIndex].startingDate = newPost.startingDate;
+    _posts[postIndex].endingDate = newPost.endingDate;
     _posts[postIndex].description = newPost.description;
     _posts[postIndex].feeding = newPost.feeding;
     _posts[postIndex].petNum = newPost.petNum;
@@ -70,6 +94,21 @@ class PostsProvider with ChangeNotifier {
     _posts[postIndex].salary = newPost.salary;
     _posts[postIndex].title = newPost.title;
     _posts[postIndex].walks = newPost.walks;
+    await FirebaseFirestore.instance
+        .collection('posts')
+        .doc(newPost.postId)
+        .set({
+      'petNum': newPost.petNum,
+      'title': newPost.title,
+      'startingdate': newPost.startingDate,
+      'endingdate': newPost.endingDate,
+      'salary': newPost.salary,
+      'description': newPost.description,
+      'walks': newPost.walks,
+      'feeding': newPost.feeding,
+      'watering': newPost.watering,
+      'userid': newPost.userId,
+    });
     notifyListeners();
   }
 
@@ -83,5 +122,11 @@ class PostsProvider with ChangeNotifier {
             element.watering == waterNum)
         .toList();
     return filtered;
+  }
+
+  List<Post> getUserPosts(String userId) {
+    List<Post> userPosts =
+        _posts.where((element) => element.userId == userId).toList();
+    return userPosts;
   }
 }
