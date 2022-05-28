@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:petkeeper/providers/request_provider.dart';
 import 'package:provider/provider.dart';
 
-import 'package:petkeeper/models/post.dart';
-import 'package:petkeeper/widgets/post_item.dart';
-import 'package:petkeeper/widgets/widget_args/new_post_screen_args.dart';
+import '../models/filter.dart';
+import '../providers/request_provider.dart';
+import '../providers/filters_provider.dart';
+import '../models/post.dart';
+import '../screens/screen_args/new_post_screen_args.dart';
 import '../widgets/post_item.dart';
 import '../providers/auth_provider.dart';
 import '../providers/user_provider.dart';
 import '../widgets/AppDrawer.dart';
 import '../providers/posts_provider.dart';
+import '../providers/rating_provider.dart';
 
 class homeScreen extends StatefulWidget {
   static const routename = '/home-screen';
@@ -19,8 +21,6 @@ class homeScreen extends StatefulWidget {
 }
 
 class _homeScreenState extends State<homeScreen> {
-  int _dropDownWaterValue = 0;
-  @override
   bool _isLoading = true;
   @override
   void didChangeDependencies() async {
@@ -30,6 +30,7 @@ class _homeScreenState extends State<homeScreen> {
     await Provider.of<AuthProvider>(context, listen: false)
         .fetchExtraUserInfo();
     await Provider.of<PostsProvider>(context, listen: false).fetchPosts();
+    await Provider.of<RatingProvider>(context, listen: false).fetchRatings();
     await Provider.of<UserProvider>(context, listen: false).fetchUsersData();
     await Provider.of<RequestProvider>(context, listen: false).fetchRequests();
     super.didChangeDependencies();
@@ -39,9 +40,23 @@ class _homeScreenState extends State<homeScreen> {
   }
 
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
+    final filterProvider = Provider.of<FiltersProvider>(context).filter;
     final postProvider = Provider.of<PostsProvider>(context);
-    List<Post> postList = postProvider.post;
+    final requestProvider = Provider.of<RequestProvider>(context);
+    List<Post> unFilteredPosts = postProvider.getOngingPosts(postProvider.post);
+    List<Post> unFilteredPostList =
+        requestProvider.getPendingPosts(unFilteredPosts);
+    List<Post> filteredPostList = postProvider.filterResults(
+        Filter(
+            filterProvider.foodValue,
+            filterProvider.petsValue,
+            filterProvider.walksValue,
+            filterProvider.waterValue,
+            filterProvider.startingSalaryValue,
+            filterProvider.startingDate,
+            filterProvider.endingDate),
+        unFilteredPostList);
+
     return Scaffold(
         backgroundColor: const Color(0xffeaeaea),
         appBar: AppBar(
@@ -52,83 +67,107 @@ class _homeScreenState extends State<homeScreen> {
                       end: Alignment.topRight,
                       colors: <Color>[Color(0xfffe5858), Color(0xffee9617)]))),
           title: const Text('PetKeeper'),
-          actions: [
-            Padding(
-                padding: const EdgeInsets.only(right: 20.0),
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      postList = postProvider.post;
-                    });
-                  },
-                  child: const Icon(
-                    Icons.refresh,
-                    size: 26.0,
-                  ),
-                )),
-            Padding(
-              padding: const EdgeInsets.only(right: 20.0),
-              child: GestureDetector(
-                  onTap:
-                      () {}, // implement a connection between the GetsureDetector and the filter_drawer/provider.
-                  child: PopupMenuButton(
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                          child: Row(children: [
-                        const Text('Watering(per day)'),
-                        DropdownButton<int>(
-                            style: const TextStyle(
-                                color: Colors.blue, fontSize: 17),
-                            underline: Container(height: 2, color: Colors.blue),
-                            value: _dropDownWaterValue,
-                            items: <int>[0, 1, 2, 3, 4, 5, 6]
-                                .map<DropdownMenuItem<int>>((int value) {
-                              return DropdownMenuItem<int>(
-                                child: Text(value.toString()),
-                                value: value,
-                              );
-                            }).toList(),
-                            onChanged: (newValue) {
-                              setState(() {
-                                _dropDownWaterValue = newValue!;
-                              });
-                            }),
-                      ]))
-                    ],
-                  )),
-            )
-          ],
         ),
-        drawer: AppDrawer(),
-        floatingActionButton: InkWell(
-          child: ClipOval(
-            child: Container(
-                decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                        begin: Alignment.bottomLeft,
-                        end: Alignment.topRight,
-                        colors: <Color>[Color(0xfffe5858), Color(0xffee9617)])),
-                height: 60,
-                width: 60,
-                child: const Icon(
-                  Icons.add,
-                  color: Colors.white,
-                )),
+        drawer: _isLoading
+            ? const Drawer(
+                child: CircularProgressIndicator(),
+              )
+            : AppDrawer(),
+        floatingActionButton:
+            Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+          InkWell(
+            child: ClipOval(
+              child: Container(
+                  decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                          begin: Alignment.bottomLeft,
+                          end: Alignment.topRight,
+                          colors: <Color>[
+                        Color(0xfffe5858),
+                        Color(0xffee9617)
+                      ])),
+                  height: 60,
+                  width: 60,
+                  child: const Icon(Icons.refresh, color: Colors.white)),
+            ),
+            onTap: () {
+              unFilteredPosts = postProvider.post;
+              unFilteredPostList =
+                  requestProvider.getPendingPosts(unFilteredPosts);
+              setState(() {
+                filteredPostList = postProvider.filterResults(
+                    Filter(
+                        filterProvider.foodValue,
+                        filterProvider.petsValue,
+                        filterProvider.walksValue,
+                        filterProvider.waterValue,
+                        filterProvider.startingSalaryValue,
+                        filterProvider.startingDate,
+                        filterProvider.endingDate),
+                    unFilteredPostList);
+              });
+            },
           ),
-          onTap: () {
-            Navigator.of(context).pushNamed('/new_post-screen',
-                arguments: NewPostScreenArgs(null, false));
-          },
-        ),
+          const SizedBox(width: 10),
+          InkWell(
+            child: ClipOval(
+              child: Container(
+                  decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                          begin: Alignment.bottomLeft,
+                          end: Alignment.topRight,
+                          colors: <Color>[
+                        Color(0xfffe5858),
+                        Color(0xffee9617)
+                      ])),
+                  height: 60,
+                  width: 60,
+                  child: const Icon(Icons.search, color: Colors.white)),
+            ),
+            onTap: () {
+              Navigator.of(context).pushNamed('/filters-screen');
+            },
+          ),
+          const SizedBox(width: 10),
+          InkWell(
+            child: ClipOval(
+              child: Container(
+                  decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                          begin: Alignment.bottomLeft,
+                          end: Alignment.topRight,
+                          colors: <Color>[
+                        Color(0xfffe5858),
+                        Color(0xffee9617)
+                      ])),
+                  height: 60,
+                  width: 60,
+                  child: const Icon(Icons.add, color: Colors.white)),
+            ),
+            onTap: () {
+              Navigator.of(context).pushNamed('/new_post-screen',
+                  arguments: NewPostScreenArgs(null, false));
+            },
+          ),
+        ]),
         body: _isLoading
-            ? const CircularProgressIndicator()
-            : SizedBox.expand(
-                child: ListView.builder(
-                    itemCount: postList.length,
-                    padding: const EdgeInsets.only(bottom: 10, top: 10),
-                    itemBuilder: (BuildContext ctx, index) {
-                      return PostItem(postList[index], false);
-                    }),
-              ));
+            ? const Center(child: CircularProgressIndicator())
+            : filteredPostList.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No listings :(',
+                      style: TextStyle(fontSize: 20),
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                : SizedBox.expand(
+                    child: ListView.builder(
+                        itemCount: filteredPostList.length,
+                        padding: const EdgeInsets.only(bottom: 10, top: 10),
+                        itemBuilder: (BuildContext ctx, index) {
+                          return PostItem(
+                              filteredPostList[index], false, false, false);
+                        }),
+                  ));
   }
 }

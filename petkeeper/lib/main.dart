@@ -2,17 +2,20 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:petkeeper/providers/request_provider.dart';
 import 'package:provider/provider.dart';
 // file imports
+import 'providers/rating_provider.dart';
+import 'providers/filters_provider.dart';
+import 'screens/filters_screen.dart';
+import 'screens/jobs_screen.dart';
 import 'Screens/new_post_screen.dart';
+import 'providers/request_provider.dart';
 import 'Screens/home_screen.dart';
-import 'widgets/AppDrawer.dart';
 import 'Screens/auth_screen.dart';
-import './providers/user_provider.dart';
-import 'package:petkeeper/screens/post_screen.dart';
-import 'package:petkeeper/screens/profile_screen.dart';
-import 'package:petkeeper/screens/user_listings_screen.dart';
+import 'providers/user_provider.dart';
+import 'screens/post_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/user_listings_screen.dart';
 import 'providers/auth_provider.dart';
 import 'providers/posts_provider.dart';
 
@@ -27,10 +30,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (ctx) => RatingProvider()),
         ChangeNotifierProvider(create: (ctx) => RequestProvider()),
         ChangeNotifierProvider(create: (ctx) => AuthProvider()),
         ChangeNotifierProvider(create: (ctx) => PostsProvider()),
-        ChangeNotifierProvider(create: (ctx) => UserProvider())
+        ChangeNotifierProvider(create: (ctx) => UserProvider()),
+        ChangeNotifierProvider(create: (ctx) => FiltersProvider())
       ],
       child: MaterialApp(
         title: "PetKeeper",
@@ -53,12 +58,14 @@ class MyApp extends StatelessWidget {
           ),
         ),
         routes: {
+          JobScreen.routename: (ctx) => JobScreen(),
           AuthScreen.routename: (ctx) => AuthScreen(),
           homeScreen.routename: (ctx) => homeScreen(),
           NewPost.routename: (ctx) => NewPost(),
           ProfileScreen.routename: (ctx) => ProfileScreen(),
           PostScreen.routename: (ctx) => PostScreen(),
           UserListings.routename: (ctx) => UserListings(),
+          FiltersScreen.routename: (ctx) => FiltersScreen(),
         },
       ),
     );

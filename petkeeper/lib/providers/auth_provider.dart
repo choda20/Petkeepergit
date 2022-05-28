@@ -9,7 +9,7 @@ import 'package:image_picker/image_picker.dart';
 class AuthProvider with ChangeNotifier {
   final _auth = FirebaseAuth.instance;
   late final User user = _auth.currentUser!;
-  late String _uid = user.uid;
+  late String _uid;
   late String _name;
   late String _email;
   late String _phoneNumber;
@@ -32,29 +32,41 @@ class AuthProvider with ChangeNotifier {
       } else {
         authResult = await _auth.createUserWithEmailAndPassword(
             email: email, password: password);
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(authResult.user!.uid)
-            .set(
-                {'username': name, 'email': email, 'phoneNumber': phoneNumber});
         _uid = authResult.user!.uid;
         await FirebaseStorage.instance
             .refFromURL(
                 'gs://petkeeper-7a537.appspot.com/profilePictures/$_uid')
             .putFile(File(profilePicture!.path));
+        final url = await FirebaseStorage.instance
+            .refFromURL(
+                'gs://petkeeper-7a537.appspot.com/profilePictures/$_uid')
+            .getDownloadURL();
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(authResult.user!.uid)
+            .set({
+          'username': name,
+          'email': email,
+          'phoneNumber': phoneNumber,
+          'downloadurl': url
+        });
+        _name = name;
+        _email = email;
+        _phoneNumber = phoneNumber;
       }
       _uid = authResult.user!.uid;
     } on PlatformException catch (err) {
       String? message = 'An error has occurred,please check your credentials';
-      if (err.message != null) {
-        message = err.message;
-      }
+
       ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
-        content: Text(message!),
+        content: Text(message),
         backgroundColor: Colors.red,
       ));
     } catch (err) {
-      print(err);
+      ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+        content: Text(err.toString()),
+        backgroundColor: Colors.red,
+      ));
     }
   }
 

@@ -4,6 +4,7 @@ class Post {
   String startingDate;
   String endingDate;
   String title;
+  String downloadUrl;
   String description;
   int salary;
   int walks;
@@ -13,6 +14,7 @@ class Post {
 
   Post({
     required this.userId,
+    required this.downloadUrl,
     required this.startingDate,
     required this.endingDate,
     required this.title,

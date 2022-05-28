@@ -1,12 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:petkeeper/widgets/widget_args/profile_screen_args.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
-import '../providers/posts_provider.dart';
+import '../providers/user_provider.dart';
+import '../screens/screen_args/profile_screen_args.dart';
 
 class AppDrawer extends StatelessWidget {
   var _isLoading = true;
@@ -19,9 +17,7 @@ class AppDrawer extends StatelessWidget {
       _isLoading = false;
     }
     final uid = Provider.of<AuthProvider>(context).user.uid;
-    final url = FirebaseStorage.instance
-        .refFromURL('gs://petkeeper-7a537.appspot.com/profilePictures/$uid')
-        .getDownloadURL();
+    final userData = Provider.of<UserProvider>(context).getUserData(uid);
     return _isLoading
         ? const CircularProgressIndicator()
         : Drawer(
@@ -34,25 +30,9 @@ class AppDrawer extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 45),
-                  FutureBuilder(
-                    builder:
-                        (BuildContext context, AsyncSnapshot<String> snapshot) {
-                      Widget imageDisplay;
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        imageDisplay = Image.network(
-                          snapshot.data.toString(),
-                          fit: BoxFit.cover,
-                        );
-                      } else {
-                        imageDisplay = const CircularProgressIndicator();
-                      }
-                      return ClipOval(
-                        child: SizedBox(
-                            height: 150, width: 150, child: imageDisplay),
-                      );
-                    },
-                    future: url,
-                  ),
+                  CircleAvatar(
+                      radius: 80,
+                      backgroundImage: NetworkImage(userData.downloadurl)),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
@@ -98,7 +78,9 @@ class AppDrawer extends StatelessWidget {
                       'Jobs',
                       style: TextStyle(color: Colors.white),
                     ),
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.of(context).pushNamed('/jobs-screen');
+                    },
                   ),
                   ListTile(
                     leading: const Icon(Icons.logout, color: Colors.white),

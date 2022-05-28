@@ -1,33 +1,28 @@
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:petkeeper/models/request.dart';
-import 'package:petkeeper/providers/request_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_gradient_text/simple_gradient_text.dart';
 
-import 'package:petkeeper/widgets/widget_args/profile_screen_args.dart';
+import '../models/request.dart';
+import '../providers/request_provider.dart';
 import '../providers/auth_provider.dart';
-import 'package:petkeeper/models/post.dart';
-import 'package:petkeeper/models/user.dart';
-import 'package:petkeeper/providers/posts_provider.dart';
-import 'package:petkeeper/providers/user_provider.dart';
-import 'package:petkeeper/widgets/widget_args/new_post_screen_args.dart';
-import 'package:petkeeper/widgets/widget_args/post_screen_args.dart';
+import '../models/user.dart';
+import '../providers/posts_provider.dart';
+import '../providers/user_provider.dart';
+import '../screens/screen_args/post_screen_args.dart';
+import '../screens/screen_args/profile_screen_args.dart';
+import '../screens/screen_args/new_post_screen_args.dart';
+import '../widgets/gradient_icons.dart';
 
 class PostScreen extends StatelessWidget {
   static const routename = '/post-screen';
   @override
   Widget build(BuildContext context) {
     final request = Provider.of<RequestProvider>(context);
-    final requestlist = Provider.of<RequestProvider>(context).requests;
     final currentUserId = Provider.of<AuthProvider>(context).user.uid;
     final args = ModalRoute.of(context)!.settings.arguments as PostScreenArgs;
     User poster =
         Provider.of<UserProvider>(context).getUserData(args.postData.userId);
     String postId = args.postData.postId;
-    String title = args.postData.title;
-    final _firebaseStorage =
-        FirebaseStorage.instance.ref().child('images/$postId');
 
     return Scaffold(
       backgroundColor: const Color(0xffeaeaea),
@@ -39,7 +34,7 @@ class PostScreen extends StatelessWidget {
                     end: Alignment.topRight,
                     colors: <Color>[Color(0xfffe5858), Color(0xffee9617)]))),
         title: Text(args.postData.title),
-        actions: args.isEditing
+        actions: args.isEditing && args.isAccepted == false
             ? [
                 Padding(
                     padding: const EdgeInsets.only(right: 15.0),
@@ -88,30 +83,18 @@ class PostScreen extends StatelessWidget {
             Row(children: [
               const SizedBox(width: 5),
               Padding(
-                padding: const EdgeInsets.all(3.0),
-                child: FutureBuilder<String>(
-                    future: _firebaseStorage.getDownloadURL(),
-                    builder:
-                        (BuildContext context, AsyncSnapshot<String> snapshot) {
-                      Widget imageDisplay;
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        imageDisplay = Image.network(snapshot.data.toString());
-                      } else {
-                        imageDisplay = const CircularProgressIndicator();
-                      }
-                      return SizedBox(
-                        height: 200,
-                        width: 200,
-                        child: FittedBox(
-                          fit: BoxFit.fill,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: imageDisplay,
-                          ),
-                        ),
-                      );
-                    }),
-              ),
+                  padding: const EdgeInsets.all(3.0),
+                  child: SizedBox(
+                    height: 200,
+                    width: 200,
+                    child: FittedBox(
+                      fit: BoxFit.fill,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(args.postData.downloadUrl),
+                      ),
+                    ),
+                  )),
               const SizedBox(width: 10),
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(children: [
@@ -270,7 +253,7 @@ class PostScreen extends StatelessWidget {
                       fontSize: 20, color: Color.fromARGB(255, 35, 34, 34))),
             ]),
             const SizedBox(height: 15),
-            if (currentUserId != poster.userId)
+            if (currentUserId != poster.userId && !args.isFromProfileScreen)
               request.hasRequested(
                           currentUserId, poster.userId, args.postData.postId) ==
                       false
@@ -279,7 +262,6 @@ class PostScreen extends StatelessWidget {
                           style: ElevatedButton.styleFrom(
                               primary: Theme.of(context).primaryColor),
                           onPressed: () {
-                            print(postId);
                             request.addRequest(Request(postId, poster.userId,
                                 currentUserId, false, ''));
                             Navigator.of(context).pop();
@@ -298,24 +280,6 @@ class PostScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class RadiantGradientMask extends StatelessWidget {
-  RadiantGradientMask({required this.child});
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return ShaderMask(
-      shaderCallback: (bounds) => const RadialGradient(
-        center: Alignment.topCenter,
-        radius: 1,
-        colors: [Color(0xfffe5858), Color(0xffee9617)],
-        tileMode: TileMode.mirror,
-      ).createShader(bounds),
-      child: child,
     );
   }
 }

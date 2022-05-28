@@ -67,7 +67,7 @@ class _AuthFormState extends State<AuthForm> {
         _isLoading = !_isLoading;
       });
     }
-    if (_storedImage == null) {
+    if (_storedImage == null && !_isLogin) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Please choose an Image'),
           backgroundColor: Colors.red));
@@ -114,7 +114,10 @@ class _AuthFormState extends State<AuthForm> {
                           key: const ValueKey('username'),
                           validator: (value) {
                             if (value == null || value == '') {
-                              return 'Please enter a Username.';
+                              return 'Please enter a username.';
+                            }
+                            if (value.length > 10) {
+                              return 'a usernames maximun length is 10 characters';
                             }
                             return null;
                           },
@@ -155,6 +158,9 @@ class _AuthFormState extends State<AuthForm> {
                         validator: (value) {
                           if (value == null || !isNumeric(value)) {
                             return 'Please enter a valid phone number.';
+                          }
+                          if (value.length > 10) {
+                            return 'a phone numbers maximun length is 10 characters';
                           }
                           return null;
                         },

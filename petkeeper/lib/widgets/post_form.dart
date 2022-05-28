@@ -1,14 +1,12 @@
-import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:petkeeper/models/post.dart';
-import 'package:petkeeper/providers/auth_provider.dart';
-import 'package:petkeeper/providers/posts_provider.dart';
 import 'package:provider/provider.dart';
+
+import '../widgets/gradient_icons.dart';
+import '../models/post.dart';
+import '../widgets/gradient_button.dart';
+import '../providers/posts_provider.dart';
 
 class PostForm extends StatefulWidget {
   PostForm(this.postImage, this.userId, this.isEditing, this.postdata);
@@ -21,7 +19,7 @@ class PostForm extends StatefulWidget {
 }
 
 class _PostFormState extends State<PostForm> {
-  String postId = '';
+  String _postId = '';
   String _jobDescription = '';
   String _startingDate = '';
   String _endinggDate = '';
@@ -31,8 +29,8 @@ class _PostFormState extends State<PostForm> {
   int _dropdownFeedingValue = 0;
   int _dropdownWalksValue = 0;
   int _dropdownPetValue = 0;
-  TextEditingController startingDateController = TextEditingController();
-  TextEditingController endingDateController = TextEditingController();
+  TextEditingController _startingDateController = TextEditingController();
+  TextEditingController _endingDateController = TextEditingController();
   final _postKey = GlobalKey<FormState>();
 
   void trySubmit() async {
@@ -46,15 +44,28 @@ class _PostFormState extends State<PostForm> {
     }
     DateTime startingDate = DateTime.parse(_startingDate);
     DateTime endingDate = DateTime.parse(_endinggDate);
+    bool? newImage = null;
+    if (widget.isEditing) {
+      if (widget.postImage == null) {
+        newImage = false;
+      } else {
+        newImage = true;
+      }
+    }
     if (isValid != null &&
-        isValid &&
-        widget.postImage != null &&
-        startingDate.isBefore(endingDate)) {
+            isValid &&
+            widget.postImage != null &&
+            startingDate.isBefore(endingDate) ||
+        isValid != null &&
+            isValid &&
+            newImage == false &&
+            startingDate.isBefore(endingDate)) {
       if (widget.isEditing == false) {
         Provider.of<PostsProvider>(context, listen: false).addPost(
             Post(
+                downloadUrl: '',
                 petNum: _dropdownPetValue,
-                postId: postId,
+                postId: _postId,
                 userId: widget.userId,
                 startingDate: _startingDate,
                 endingDate: _endinggDate,
@@ -66,13 +77,16 @@ class _PostFormState extends State<PostForm> {
                 watering: _dropdownWaterValue),
             widget.postImage!);
       } else {
-        postId = widget.postdata!.postId;
-        Provider.of<PostsProvider>(context, listen: false)
-            .replaceImage(widget.postImage!, postId);
+        _postId = widget.postdata!.postId;
+        if (newImage == true) {
+          Provider.of<PostsProvider>(context, listen: false)
+              .replaceImage(widget.postImage!, _postId);
+        }
         Provider.of<PostsProvider>(context, listen: false).changePost(
             Post(
+                downloadUrl: widget.postdata!.downloadUrl,
                 petNum: _dropdownPetValue,
-                postId: postId,
+                postId: _postId,
                 userId: widget.userId,
                 startingDate: _startingDate,
                 endingDate: _endinggDate,
@@ -117,12 +131,12 @@ class _PostFormState extends State<PostForm> {
           return null;
         },
         controller:
-            indicator == 0 ? startingDateController : endingDateController,
+            indicator == 0 ? _startingDateController : _endingDateController,
         onTap: () async {
           DateTime? pickedDate = await showDatePicker(
               initialDate: indicator == 0
                   ? DateTime.now()
-                  : DateTime.parse(startingDateController.text),
+                  : DateTime.parse(_startingDateController.text),
               context: context,
               firstDate: DateTime.now(),
               lastDate: DateTime(3000));
@@ -130,20 +144,21 @@ class _PostFormState extends State<PostForm> {
             String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
             setState(() {
               indicator == 0
-                  ? startingDateController.text = formattedDate
-                  : endingDateController.text = formattedDate;
+                  ? _startingDateController.text = formattedDate
+                  : _endingDateController.text = formattedDate;
             });
           }
         },
         decoration: InputDecoration(
             focusedBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: Color(0xffee9617))),
-            icon: const Icon(Icons.calendar_today),
+            icon: RadiantGradientMask(
+                child: const Icon(Icons.calendar_month, color: Colors.white)),
             labelText: indicator == 0 ? 'Starting date' : 'Ending date',
             labelStyle: const TextStyle(color: Colors.black),
             enabledBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: Color(0xffee9617)))),
-        style: const TextStyle(color: Color(0xffee9617)),
+        style: const TextStyle(color: Colors.black),
         onSaved: (value) {
           indicator == 0 ? _startingDate = value! : _endinggDate = value!;
         },
@@ -161,8 +176,8 @@ class _PostFormState extends State<PostForm> {
       _dropdownFeedingValue = widget.postdata!.feeding;
       _dropdownWalksValue = widget.postdata!.walks;
       _dropdownPetValue = widget.postdata!.petNum;
-      startingDateController.text = widget.postdata!.startingDate;
-      endingDateController.text = widget.postdata!.endingDate;
+      _startingDateController.text = widget.postdata!.startingDate;
+      _endingDateController.text = widget.postdata!.endingDate;
     }
     return Form(
       key: _postKey,
@@ -184,7 +199,7 @@ class _PostFormState extends State<PostForm> {
                 labelStyle: TextStyle(color: Colors.black),
                 enabledBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: Color(0xffee9617)))),
-            style: const TextStyle(color: Color(0xffee9617)),
+            style: const TextStyle(color: Colors.black),
             onSaved: (value) {
               _title = value!;
             },
@@ -192,7 +207,7 @@ class _PostFormState extends State<PostForm> {
           const Padding(padding: EdgeInsets.all(5)),
           DatePicker(0),
           const Padding(padding: EdgeInsets.all(5)),
-          startingDateController.text == '' ? SizedBox() : DatePicker(1),
+          _startingDateController.text == '' ? SizedBox() : DatePicker(1),
           const Padding(padding: EdgeInsets.all(5)),
           TextFormField(
             initialValue: _salary.toString(),
@@ -212,15 +227,17 @@ class _PostFormState extends State<PostForm> {
               }
               return null;
             },
-            decoration: const InputDecoration(
-                focusedBorder: UnderlineInputBorder(
+            decoration: InputDecoration(
+                focusedBorder: const UnderlineInputBorder(
                     borderSide: BorderSide(color: Color(0xffee9617))),
-                icon: Icon(Icons.monetization_on),
-                labelText: 'Salary(USD\$)',
-                labelStyle: TextStyle(color: Colors.black),
-                enabledBorder: UnderlineInputBorder(
+                icon: RadiantGradientMask(
+                    child:
+                        const Icon(Icons.monetization_on, color: Colors.white)),
+                labelText: 'Salary(\$)',
+                labelStyle: const TextStyle(color: Colors.black),
+                enabledBorder: const UnderlineInputBorder(
                     borderSide: BorderSide(color: Color(0xffee9617)))),
-            style: const TextStyle(color: Color(0xffee9617)),
+            style: const TextStyle(color: Colors.black),
             keyboardType: TextInputType.number,
           ),
           const Padding(
@@ -236,7 +253,7 @@ class _PostFormState extends State<PostForm> {
                 labelStyle: TextStyle(color: Colors.black),
                 enabledBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: Color(0xffee9617)))),
-            style: const TextStyle(color: Color(0xffee9617)),
+            style: const TextStyle(color: Colors.black),
             onSaved: (value) {
               _jobDescription = value!;
             },
@@ -271,7 +288,7 @@ class _PostFormState extends State<PostForm> {
                                 fontSize: 17)),
                         DropdownButton<int>(
                             style: const TextStyle(
-                                color: Color(0xffee9617), fontSize: 17),
+                                color: Colors.black, fontSize: 17),
                             underline:
                                 Container(height: 2, color: Color(0xffee9617)),
                             value: _dropdownPetValue,
@@ -307,7 +324,7 @@ class _PostFormState extends State<PostForm> {
                                 fontSize: 17)),
                         DropdownButton<int>(
                             style: const TextStyle(
-                                color: Color(0xffee9617), fontSize: 17),
+                                color: Colors.black, fontSize: 17),
                             underline:
                                 Container(height: 2, color: Color(0xffee9617)),
                             value: _dropdownWaterValue,
@@ -343,7 +360,7 @@ class _PostFormState extends State<PostForm> {
                                 fontSize: 17)),
                         DropdownButton<int>(
                             style: const TextStyle(
-                                color: Color(0xffee9617), fontSize: 17),
+                                color: Colors.black, fontSize: 17),
                             underline:
                                 Container(height: 2, color: Color(0xffee9617)),
                             value: _dropdownFeedingValue,
@@ -379,7 +396,7 @@ class _PostFormState extends State<PostForm> {
                                 fontSize: 17)),
                         DropdownButton<int>(
                             style: const TextStyle(
-                                color: Color(0xffee9617), fontSize: 17),
+                                color: Colors.black, fontSize: 17),
                             underline:
                                 Container(height: 2, color: Color(0xffee9617)),
                             value: _dropdownWalksValue,
@@ -399,17 +416,9 @@ class _PostFormState extends State<PostForm> {
             },
             key: const ValueKey('Watering'),
           ),
-          ButtonTheme(
-              child: OutlinedButton.icon(
-                  onPressed: trySubmit,
-                  icon: const Icon(
-                    Icons.done,
-                    color: Color(0xffee9617),
-                  ),
-                  label: const Text(
-                    'Submit',
-                    style: TextStyle(color: Color(0xffee9617)),
-                  )))
+          const SizedBox(height: 10),
+          GradientButton(trySubmit, 40, 130, Icons.done, "Submit", 20),
+          const SizedBox(height: 20)
         ],
       ),
     );

@@ -12,8 +12,8 @@ class UserProvider with ChangeNotifier {
         await FirebaseFirestore.instance.collection('users').get();
     _userList = [];
     for (var doc in querySnapshot.docs) {
-      User newUser =
-          User(doc['username'], doc['email'], doc['phoneNumber'], doc.id);
+      User newUser = User(doc['username'], doc['email'], doc['phoneNumber'],
+          doc.id, doc['downloadurl']);
       _userList.add(newUser);
     }
   }
