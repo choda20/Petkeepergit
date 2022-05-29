@@ -72,10 +72,6 @@ class _AuthFormState extends State<AuthForm> {
           content: Text('Please choose an Image'),
           backgroundColor: Colors.red));
     }
-    if (isValid == null || !isValid) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Invalid Inputs'), backgroundColor: Colors.red));
-    }
   }
 
   bool isNumeric(String num) {
@@ -122,6 +118,7 @@ class _AuthFormState extends State<AuthForm> {
                             return null;
                           },
                           decoration: const InputDecoration(
+                              errorStyle: TextStyle(color: Colors.white),
                               labelText: 'Username',
                               labelStyle: TextStyle(color: Colors.white),
                               enabledBorder: UnderlineInputBorder(
@@ -142,6 +139,7 @@ class _AuthFormState extends State<AuthForm> {
                         return null;
                       },
                       decoration: const InputDecoration(
+                          errorStyle: TextStyle(color: Colors.white),
                           labelText: 'Email',
                           labelStyle: TextStyle(color: Colors.white),
                           enabledBorder: UnderlineInputBorder(
@@ -159,12 +157,13 @@ class _AuthFormState extends State<AuthForm> {
                           if (value == null || !isNumeric(value)) {
                             return 'Please enter a valid phone number.';
                           }
-                          if (value.length > 10) {
+                          if (value.length > 11) {
                             return 'a phone numbers maximun length is 10 characters';
                           }
                           return null;
                         },
                         decoration: const InputDecoration(
+                            errorStyle: TextStyle(color: Colors.white),
                             labelText: 'Phone number',
                             labelStyle: TextStyle(color: Colors.white),
                             enabledBorder: UnderlineInputBorder(
@@ -185,6 +184,7 @@ class _AuthFormState extends State<AuthForm> {
                         },
                         obscureText: true,
                         decoration: const InputDecoration(
+                            errorStyle: TextStyle(color: Colors.white),
                             labelText: 'Password',
                             labelStyle: TextStyle(color: Colors.white),
                             enabledBorder: UnderlineInputBorder(
@@ -208,6 +208,7 @@ class _AuthFormState extends State<AuthForm> {
                         },
                         obscureText: true,
                         decoration: const InputDecoration(
+                            errorStyle: TextStyle(color: Colors.white),
                             labelText: 'Confirm Password',
                             labelStyle: TextStyle(color: Colors.white),
                             enabledBorder: UnderlineInputBorder(

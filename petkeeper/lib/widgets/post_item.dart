@@ -41,7 +41,7 @@ class PostItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
-                  height: 150,
+                  height: 160,
                   width: 150,
                   child: Card(
                       child: FittedBox(
@@ -49,26 +49,24 @@ class PostItem extends StatelessWidget {
                           child: ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: Image.network(postData.downloadUrl))))),
+              const SizedBox(width: 3),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 10),
-                  Row(children: [
-                    GradientText(
-                      postData.title,
-                      colors: const [Color(0xfffe5858), Color(0xffee9617)],
-                      style: const TextStyle(
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black),
-                    ),
-                    const SizedBox(width: 7),
-                    currentUser == postData.userId
-                        ? const SizedBox()
-                        : Text('by ${userData.userName}',
-                            style: const TextStyle(
-                                fontSize: 18, color: Colors.black)),
-                  ]),
+                  GradientText(
+                    postData.title,
+                    colors: const [Color(0xfffe5858), Color(0xffee9617)],
+                    style: const TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black),
+                  ),
+                  const SizedBox(width: 7),
+                  currentUser == postData.userId
+                      ? const SizedBox()
+                      : Text('by ${userData.userName}',
+                          style: const TextStyle(fontSize: 18)),
                   isAccepted ? const SizedBox(height: 5) : const SizedBox(),
                   isAccepted
                       ? Row(children: [

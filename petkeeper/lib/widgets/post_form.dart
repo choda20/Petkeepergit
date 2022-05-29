@@ -28,7 +28,7 @@ class _PostFormState extends State<PostForm> {
   int _dropdownWaterValue = 0;
   int _dropdownFeedingValue = 0;
   int _dropdownWalksValue = 0;
-  int _dropdownPetValue = 0;
+  int _dropdownPetValue = 1;
   TextEditingController _startingDateController = TextEditingController();
   TextEditingController _endingDateController = TextEditingController();
   final _postKey = GlobalKey<FormState>();
@@ -37,14 +37,19 @@ class _PostFormState extends State<PostForm> {
     bool? isValid = _postKey.currentState?.validate();
     FocusScope.of(context).unfocus();
     _postKey.currentState?.save();
-    if (_startingDate == '' || _endinggDate == '') {
+    DateTime startingDate = DateTime.parse('2020-01-01');
+    DateTime endingDate = DateTime.parse('2021-01-01');
+    bool hasDates = true;
+    if (_startingDate == '' || _endinggDate == '' || _dropdownPetValue == 0) {
       isValid = false;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Please choose dates'), backgroundColor: Colors.red));
+      hasDates = false;
     }
-    DateTime startingDate = DateTime.parse(_startingDate);
-    DateTime endingDate = DateTime.parse(_endinggDate);
+    if (_startingDate != '' && _endinggDate != '') {
+      startingDate = DateTime.parse(_startingDate);
+      endingDate = DateTime.parse(_endinggDate);
+    }
     bool? newImage = null;
+
     if (widget.isEditing) {
       if (widget.postImage == null) {
         newImage = false;
@@ -52,68 +57,73 @@ class _PostFormState extends State<PostForm> {
         newImage = true;
       }
     }
-    if (isValid != null &&
-            isValid &&
-            widget.postImage != null &&
-            startingDate.isBefore(endingDate) ||
-        isValid != null &&
-            isValid &&
-            newImage == false &&
-            startingDate.isBefore(endingDate)) {
-      if (widget.isEditing == false) {
-        Provider.of<PostsProvider>(context, listen: false).addPost(
-            Post(
-                downloadUrl: '',
-                petNum: _dropdownPetValue,
-                postId: _postId,
-                userId: widget.userId,
-                startingDate: _startingDate,
-                endingDate: _endinggDate,
-                title: _title,
-                description: _jobDescription,
-                salary: _salary,
-                walks: _dropdownWalksValue,
-                feeding: _dropdownFeedingValue,
-                watering: _dropdownWaterValue),
-            widget.postImage!);
-      } else {
-        _postId = widget.postdata!.postId;
-        if (newImage == true) {
-          Provider.of<PostsProvider>(context, listen: false)
-              .replaceImage(widget.postImage!, _postId);
+
+    try {
+      if (isValid != null &&
+              isValid &&
+              widget.postImage != null &&
+              startingDate.isBefore(endingDate) ||
+          isValid != null &&
+              isValid &&
+              newImage == false &&
+              startingDate.isBefore(endingDate)) {
+        if (widget.isEditing == false) {
+          Provider.of<PostsProvider>(context, listen: false).addPost(
+              Post(
+                  downloadUrl: '',
+                  petNum: _dropdownPetValue,
+                  postId: _postId,
+                  userId: widget.userId,
+                  startingDate: _startingDate,
+                  endingDate: _endinggDate,
+                  title: _title,
+                  description: _jobDescription,
+                  salary: _salary,
+                  walks: _dropdownWalksValue,
+                  feeding: _dropdownFeedingValue,
+                  watering: _dropdownWaterValue),
+              widget.postImage!);
+        } else {
+          _postId = widget.postdata!.postId;
+          String downloadUrl = widget.postdata!.downloadUrl;
+          if (newImage == true) {
+            Provider.of<PostsProvider>(context, listen: false)
+                .replaceImage(widget.postImage!, _postId);
+          }
+          Provider.of<PostsProvider>(context, listen: false).changePost(
+              Post(
+                  downloadUrl: downloadUrl,
+                  petNum: _dropdownPetValue,
+                  postId: _postId,
+                  userId: widget.userId,
+                  startingDate: _startingDate,
+                  endingDate: _endinggDate,
+                  title: _title,
+                  description: _jobDescription,
+                  salary: _salary,
+                  walks: _dropdownWalksValue,
+                  feeding: _dropdownFeedingValue,
+                  watering: _dropdownWaterValue),
+              widget.postdata!.postId);
         }
-        Provider.of<PostsProvider>(context, listen: false).changePost(
-            Post(
-                downloadUrl: widget.postdata!.downloadUrl,
-                petNum: _dropdownPetValue,
-                postId: _postId,
-                userId: widget.userId,
-                startingDate: _startingDate,
-                endingDate: _endinggDate,
-                title: _title,
-                description: _jobDescription,
-                salary: _salary,
-                walks: _dropdownWalksValue,
-                feeding: _dropdownFeedingValue,
-                watering: _dropdownWaterValue),
-            widget.postdata!.postId);
+        Navigator.of(context).pop();
       }
-      Navigator.of(context).pop();
+    } catch (e) {
+      print(e.toString());
     }
 
-    if (!startingDate.isBefore(endingDate)) {
+    if (!startingDate.isBefore(endingDate) && hasDates) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Starting date is after ending date.'),
           backgroundColor: Colors.red));
-    }
-    if (widget.postImage == null) {
+    } else if (widget.postImage == null && widget.isEditing == false) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Please choose an Image'),
           backgroundColor: Colors.red));
-    }
-    if (isValid == null || !isValid) {
+    } else if (_dropdownPetValue == 0) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Invalid inputs'), backgroundColor: Colors.red));
+          content: Text('Please choose a number of pets'),
+          backgroundColor: Colors.red));
     }
   }
 
@@ -125,7 +135,7 @@ class _PostFormState extends State<PostForm> {
             ? const ValueKey('Starting Date')
             : const ValueKey('Ending Date'),
         validator: (value) {
-          if (value == null) {
+          if (value == null || value.isEmpty) {
             return 'Please enter a date';
           }
           return null;
@@ -187,8 +197,11 @@ class _PostFormState extends State<PostForm> {
             initialValue: _title,
             key: const ValueKey('Title'),
             validator: (value) {
-              if (value == null) {
+              if (value == null || value.isEmpty) {
                 return 'Please enter a title.';
+              }
+              if (value.length > 19) {
+                return 'A title\'s length cannot be longer then 19 characters.';
               }
               return null;
             },
@@ -204,11 +217,11 @@ class _PostFormState extends State<PostForm> {
               _title = value!;
             },
           ),
-          const Padding(padding: EdgeInsets.all(5)),
+          const SizedBox(height: 6),
           DatePicker(0),
-          const Padding(padding: EdgeInsets.all(5)),
+          const SizedBox(height: 6),
           _startingDateController.text == '' ? SizedBox() : DatePicker(1),
-          const Padding(padding: EdgeInsets.all(5)),
+          const SizedBox(height: 6),
           TextFormField(
             initialValue: _salary.toString(),
             key: const ValueKey('Salary'),
@@ -219,7 +232,7 @@ class _PostFormState extends State<PostForm> {
               if (int.tryParse(value!) == null) {
                 return 'Please enter only numbers.';
               }
-              if (value == null) {
+              if (value == null || value.isEmpty) {
                 return 'Please enter a salary.';
               }
               if (int.tryParse(value)! <= 0) {
@@ -240,10 +253,9 @@ class _PostFormState extends State<PostForm> {
             style: const TextStyle(color: Colors.black),
             keyboardType: TextInputType.number,
           ),
-          const Padding(
-            padding: EdgeInsets.all(5),
-          ),
+          const SizedBox(height: 6),
           TextFormField(
+            maxLines: null,
             initialValue: _jobDescription,
             key: const ValueKey('Job Description'),
             decoration: const InputDecoration(
@@ -258,165 +270,187 @@ class _PostFormState extends State<PostForm> {
               _jobDescription = value!;
             },
             validator: (value) {
-              if (value == null) {
+              if (value == null || value.isEmpty) {
                 return 'Please enter a Description.';
               }
+
               return null;
             },
           ),
-          const Padding(
-            padding: EdgeInsets.all(5),
-          ),
+          const SizedBox(height: 20),
           FormField(
             initialValue: _dropdownPetValue,
             validator: (value) {
-              if (value == '0') {
+              if (value == 0) {
                 return 'Please choose a number of pets.';
               }
               return null;
             },
             builder: (FormFieldState state) {
-              return Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Number of pets',
-                            style: TextStyle(
-                                decorationColor: Color(0xffee9617),
-                                fontSize: 17)),
-                        DropdownButton<int>(
-                            style: const TextStyle(
-                                color: Colors.black, fontSize: 17),
-                            underline:
-                                Container(height: 2, color: Color(0xffee9617)),
-                            value: _dropdownPetValue,
-                            items: <int>[0, 1, 2, 3, 4, 5, 6]
-                                .map<DropdownMenuItem<int>>((int value) {
-                              return DropdownMenuItem<int>(
-                                child: Text(value.toString()),
-                                value: value,
-                              );
-                            }).toList(),
-                            onChanged: (newValue) {
-                              setState(() {
-                                _dropdownPetValue = newValue!;
-                              });
-                            }),
-                      ]));
+              return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(children: [
+                      RadiantGradientMask(
+                        child: const Icon(
+                          Icons.pets,
+                          size: 20,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const Text('Number of pets',
+                          style: TextStyle(
+                              decorationColor: Color(0xffee9617),
+                              fontSize: 17)),
+                    ]),
+                    DropdownButton<int>(
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 17),
+                        underline: Container(
+                            height: 2, color: const Color(0xffee9617)),
+                        value: _dropdownPetValue,
+                        items: <int>[0, 1, 2, 3, 4, 5, 6]
+                            .map<DropdownMenuItem<int>>((int value) {
+                          return DropdownMenuItem<int>(
+                            child: Text(value.toString()),
+                            value: value,
+                          );
+                        }).toList(),
+                        onChanged: (newValue) {
+                          setState(() {
+                            _dropdownPetValue = newValue!;
+                          });
+                        }),
+                  ]);
             },
             key: const ValueKey('petNum'),
           ),
-          const Padding(padding: EdgeInsets.all(5)),
+          const SizedBox(height: 6),
           FormField(
             initialValue: _dropdownWalksValue,
             builder: (FormFieldState state) {
-              return Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Walks(per day)',
-                            style: TextStyle(
-                                decorationColor: Color(0xffee9617),
-                                fontSize: 17)),
-                        DropdownButton<int>(
-                            style: const TextStyle(
-                                color: Colors.black, fontSize: 17),
-                            underline:
-                                Container(height: 2, color: Color(0xffee9617)),
-                            value: _dropdownWaterValue,
-                            items: <int>[0, 1, 2, 3, 4, 5, 6]
-                                .map<DropdownMenuItem<int>>((int value) {
-                              return DropdownMenuItem<int>(
-                                child: Text(value.toString()),
-                                value: value,
-                              );
-                            }).toList(),
-                            onChanged: (newValue) {
-                              setState(() {
-                                _dropdownWaterValue = newValue!;
-                              });
-                            }),
-                      ]));
+              return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(children: [
+                      RadiantGradientMask(
+                        child: const Icon(
+                          Icons.directions_walk_outlined,
+                          size: 20,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const Text('Walks(per day)',
+                          style: TextStyle(
+                              decorationColor: Color(0xffee9617),
+                              fontSize: 17)),
+                    ]),
+                    DropdownButton<int>(
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 17),
+                        underline:
+                            Container(height: 2, color: Color(0xffee9617)),
+                        value: _dropdownWaterValue,
+                        items: <int>[0, 1, 2, 3, 4, 5, 6]
+                            .map<DropdownMenuItem<int>>((int value) {
+                          return DropdownMenuItem<int>(
+                            child: Text(value.toString()),
+                            value: value,
+                          );
+                        }).toList(),
+                        onChanged: (newValue) {
+                          setState(() {
+                            _dropdownWaterValue = newValue!;
+                          });
+                        }),
+                  ]);
             },
             key: const ValueKey('Walks'),
           ),
-          const Padding(padding: EdgeInsets.all(5)),
+          const SizedBox(height: 6),
           FormField(
             initialValue: _dropdownFeedingValue,
             builder: (FormFieldState state) {
-              return Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Feeding(per day)',
-                            style: TextStyle(
-                                decorationColor: Color(0xffee9617),
-                                fontSize: 17)),
-                        DropdownButton<int>(
-                            style: const TextStyle(
-                                color: Colors.black, fontSize: 17),
-                            underline:
-                                Container(height: 2, color: Color(0xffee9617)),
-                            value: _dropdownFeedingValue,
-                            items: <int>[0, 1, 2, 3, 4, 5, 6]
-                                .map<DropdownMenuItem<int>>((int value) {
-                              return DropdownMenuItem<int>(
-                                child: Text(value.toString()),
-                                value: value,
-                              );
-                            }).toList(),
-                            onChanged: (newValue) {
-                              setState(() {
-                                _dropdownFeedingValue = newValue!;
-                              });
-                            }),
-                      ]));
+              return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(children: [
+                      RadiantGradientMask(
+                        child: const Icon(
+                          Icons.food_bank,
+                          size: 20,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const Text('Feeding(per day)',
+                          style: TextStyle(
+                              decorationColor: Color(0xffee9617),
+                              fontSize: 17)),
+                    ]),
+                    DropdownButton<int>(
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 17),
+                        underline:
+                            Container(height: 2, color: Color(0xffee9617)),
+                        value: _dropdownFeedingValue,
+                        items: <int>[0, 1, 2, 3, 4, 5, 6]
+                            .map<DropdownMenuItem<int>>((int value) {
+                          return DropdownMenuItem<int>(
+                            child: Text(value.toString()),
+                            value: value,
+                          );
+                        }).toList(),
+                        onChanged: (newValue) {
+                          setState(() {
+                            _dropdownFeedingValue = newValue!;
+                          });
+                        }),
+                  ]);
             },
             key: const ValueKey('Feeding'),
           ),
-          const Padding(padding: EdgeInsets.all(5)),
+          const SizedBox(height: 6),
           FormField(
             initialValue: _dropdownWaterValue,
             builder: (FormFieldState state) {
-              return Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Watering(per day)',
-                            style: TextStyle(
-                                decorationColor: Color(0xffee9617),
-                                fontSize: 17)),
-                        DropdownButton<int>(
-                            style: const TextStyle(
-                                color: Colors.black, fontSize: 17),
-                            underline:
-                                Container(height: 2, color: Color(0xffee9617)),
-                            value: _dropdownWalksValue,
-                            items: <int>[0, 1, 2, 3, 4, 5, 6]
-                                .map<DropdownMenuItem<int>>((int value) {
-                              return DropdownMenuItem<int>(
-                                child: Text(value.toString()),
-                                value: value,
-                              );
-                            }).toList(),
-                            onChanged: (newValue) {
-                              setState(() {
-                                _dropdownWalksValue = newValue!;
-                              });
-                            }),
-                      ]));
+              return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(children: [
+                      RadiantGradientMask(
+                          child: const Icon(
+                        Icons.water_drop,
+                        size: 20,
+                        color: Colors.white,
+                      )),
+                      const Text('Watering(per day)',
+                          style: TextStyle(
+                              decorationColor: Color(0xffee9617),
+                              fontSize: 17)),
+                    ]),
+                    DropdownButton<int>(
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 17),
+                        underline:
+                            Container(height: 2, color: Color(0xffee9617)),
+                        value: _dropdownWalksValue,
+                        items: <int>[0, 1, 2, 3, 4, 5, 6]
+                            .map<DropdownMenuItem<int>>((int value) {
+                          return DropdownMenuItem<int>(
+                            child: Text(value.toString()),
+                            value: value,
+                          );
+                        }).toList(),
+                        onChanged: (newValue) {
+                          setState(() {
+                            _dropdownWalksValue = newValue!;
+                          });
+                        }),
+                  ]);
             },
             key: const ValueKey('Watering'),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 20),
           GradientButton(trySubmit, 40, 130, Icons.done, "Submit", 20),
           const SizedBox(height: 20)
         ],

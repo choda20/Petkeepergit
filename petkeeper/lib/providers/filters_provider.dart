@@ -17,6 +17,16 @@ class FiltersProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void resetFilters() {
+    filter.foodValue = 7;
+    filter.walksValue = 7;
+    filter.petsValue = 7;
+    filter.waterValue = 7;
+    filter.startingSalaryValue = 0;
+    filter.startingDate = '';
+    filter.endingDate = '';
+  }
+
   int get water {
     return filter.waterValue;
   }

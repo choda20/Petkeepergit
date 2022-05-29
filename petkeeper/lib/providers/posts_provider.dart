@@ -32,34 +32,47 @@ class PostsProvider with ChangeNotifier {
     }
   }
 
-  void replaceImage(XFile postImage, String postId) async {
-    await FirebaseStorage.instance
+  void replaceImage(XFile postImage, String postId) {
+    final postIndex = _posts.indexWhere((element) => element.postId == postId);
+    FirebaseStorage.instance
         .refFromURL('gs://petkeeper-7a537.appspot.com/images/$postId')
-        .delete();
-    await FirebaseStorage.instance
-        .refFromURL('gs://petkeeper-7a537.appspot.com/images/$postId')
-        .putFile(File(postImage.path));
-
-    notifyListeners();
+        .delete()
+        .then((value) {
+      FirebaseStorage.instance
+          .refFromURL('gs://petkeeper-7a537.appspot.com/images/$postId')
+          .putFile(File(postImage.path))
+          .then((refrence) {
+        refrence.ref.getDownloadURL().then((value) {
+          _posts[postIndex].downloadUrl = value;
+          notifyListeners();
+        });
+      });
+    });
   }
 
   List<Post> get post {
     return [..._posts];
   }
 
-  void deleteListing(String postId) async {
+  void deleteListing(String postId) {
     final postIndex = _posts.indexWhere((element) {
       return element.postId == postId;
     });
     _posts.remove(_posts[postIndex]);
-    await FirebaseFirestore.instance.collection('posts').doc(postId).delete();
-    notifyListeners();
+    FirebaseFirestore.instance
+        .collection('posts')
+        .doc(postId)
+        .delete()
+        .then((value) {
+      notifyListeners();
+    });
   }
 
-  void addPost(Post newPost, XFile postImage) async {
+  void addPost(Post newPost, XFile postImage) {
+    print(postImage.path);
     late String postId;
-    final docPath = FirebaseFirestore.instance.collection('posts').doc();
-    await docPath.set({
+    final docPath = FirebaseFirestore.instance.collection('posts');
+    docPath.add({
       'petNum': newPost.petNum,
       'title': newPost.title,
       'startingdate': newPost.startingDate,
@@ -71,26 +84,26 @@ class PostsProvider with ChangeNotifier {
       'watering': newPost.watering,
       'userid': newPost.userId
     }).then((value) {
-      postId = docPath.id;
+      postId = value.id;
+      FirebaseStorage.instance
+          .ref()
+          .child('images/$postId')
+          .putFile(File(postImage.path))
+          .then((image) {
+        image.ref.getDownloadURL().then((value) {
+          newPost.downloadUrl = value;
+          FirebaseFirestore.instance.collection('posts').doc(postId).update({
+            'downloadurl': newPost.downloadUrl,
+          });
+          newPost.postId = postId;
+          _posts.add(newPost);
+          notifyListeners();
+        });
+      });
     });
-    await FirebaseStorage.instance
-        .ref()
-        .child('images/$postId')
-        .putFile(File(postImage.path));
-    final url = await FirebaseStorage.instance
-        .ref()
-        .child('images/$postId')
-        .getDownloadURL();
-    newPost.downloadUrl = url;
-    await FirebaseFirestore.instance.collection('posts').doc(postId).update({
-      'downloadurl': url,
-    });
-    newPost.postId = postId;
-    _posts.add(newPost);
-    notifyListeners();
   }
 
-  void changePost(Post newPost, String postId) async {
+  void changePost(Post newPost, String postId) {
     final postIndex = _posts.indexWhere((element) {
       return element.postId == postId;
     });
@@ -103,10 +116,7 @@ class PostsProvider with ChangeNotifier {
     _posts[postIndex].salary = newPost.salary;
     _posts[postIndex].title = newPost.title;
     _posts[postIndex].walks = newPost.walks;
-    await FirebaseFirestore.instance
-        .collection('posts')
-        .doc(newPost.postId)
-        .update({
+    FirebaseFirestore.instance.collection('posts').doc(newPost.postId).update({
       'petNum': newPost.petNum,
       'downloadurl': _posts[postIndex].downloadUrl,
       'title': newPost.title,
@@ -118,8 +128,9 @@ class PostsProvider with ChangeNotifier {
       'feeding': newPost.feeding,
       'watering': newPost.watering,
       'userid': newPost.userId,
+    }).then((value) {
+      notifyListeners();
     });
-    notifyListeners();
   }
 
   List<Post> filterResults(Filter filter, List<Post> unFilteredPosts) {

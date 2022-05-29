@@ -40,19 +40,19 @@ class RequestProvider with ChangeNotifier {
     return true;
   }
 
-  Future<void> addRequest(Request newRequest) async {
+  void addRequest(Request newRequest) {
     late String requestId;
-    final docPath = FirebaseFirestore.instance.collection('requests').doc();
-    await docPath.set({
+    final docPath = FirebaseFirestore.instance.collection('requests');
+    docPath.add({
       'requesterid': newRequest.requesterId,
       'status': newRequest.status,
       'postid': newRequest.postId,
       'posterid': newRequest.posterId
     }).then((value) {
       requestId = docPath.id;
+      newRequest.requestId = requestId;
+      _requests.add(newRequest);
     });
-    newRequest.requestId = requestId;
-    _requests.add(newRequest);
     notifyListeners();
   }
 

@@ -52,35 +52,37 @@ class RatingProvider with ChangeNotifier {
     return rating;
   }
 
-  Future<void> addRating(Rating newRating) async {
+  void addRating(Rating newRating) {
     late String ratingId;
-    final docPath = FirebaseFirestore.instance.collection('ratings').doc();
-    await docPath.set({
+    final docPath = FirebaseFirestore.instance.collection('ratings');
+    docPath.add({
       'stars': newRating.stars,
       'description': newRating.description,
       'poster': newRating.poster,
       'caretaker': newRating.careTaker,
       'postid': newRating.postId,
       'ratedby': newRating.ratedBy
-    }).then((value) => {ratingId = docPath.id});
-    newRating.ratingId = ratingId;
-    _ratings.add(newRating);
+    }).then((value) {
+      ratingId = value.id;
+      newRating.ratingId = ratingId;
+      _ratings.add(newRating);
+    });
     notifyListeners();
   }
 
-  Future<void> updateRating(Rating updatedRating) async {
-    print(updatedRating.ratingId);
+  void updateRating(Rating updatedRating) {
     final docPath = FirebaseFirestore.instance
         .collection('ratings')
         .doc(updatedRating.ratingId);
     final ratingIndex = _ratings
         .indexWhere((element) => element.ratingId == updatedRating.ratingId);
-    await docPath.update({
+    docPath.update({
       'stars': updatedRating.stars,
       'description': updatedRating.description,
+    }).then((value) {
+      _ratings[ratingIndex].description = updatedRating.description;
+      _ratings[ratingIndex].stars = updatedRating.stars;
     });
-    _ratings[ratingIndex].description = updatedRating.description;
-    _ratings[ratingIndex].stars = updatedRating.stars;
     notifyListeners();
   }
 }

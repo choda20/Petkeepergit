@@ -8,10 +8,11 @@ import 'package:image_picker/image_picker.dart';
 
 class AuthProvider with ChangeNotifier {
   final _auth = FirebaseAuth.instance;
-  late final User user = _auth.currentUser!;
+  late User user;
   late String _uid;
-  late String _name;
+  late String _username;
   late String _email;
+  late String _profilePictureUrl;
   late String _phoneNumber;
 
   void submitAuthForm(
@@ -23,38 +24,40 @@ class AuthProvider with ChangeNotifier {
     BuildContext ctx,
     bool isLogin,
     bool isLoading,
-  ) async {
-    UserCredential authResult;
+  ) {
     try {
       if (isLogin) {
-        authResult = await _auth.signInWithEmailAndPassword(
-            email: email, password: password);
-      } else {
-        authResult = await _auth.createUserWithEmailAndPassword(
-            email: email, password: password);
-        _uid = authResult.user!.uid;
-        await FirebaseStorage.instance
-            .refFromURL(
-                'gs://petkeeper-7a537.appspot.com/profilePictures/$_uid')
-            .putFile(File(profilePicture!.path));
-        final url = await FirebaseStorage.instance
-            .refFromURL(
-                'gs://petkeeper-7a537.appspot.com/profilePictures/$_uid')
-            .getDownloadURL();
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(authResult.user!.uid)
-            .set({
-          'username': name,
-          'email': email,
-          'phoneNumber': phoneNumber,
-          'downloadurl': url
+        _auth
+            .signInWithEmailAndPassword(email: email, password: password)
+            .then((authResult) {
+          _uid = authResult.user!.uid;
+          user = authResult.user!;
         });
-        _name = name;
-        _email = email;
-        _phoneNumber = phoneNumber;
+      } else {
+        _auth
+            .createUserWithEmailAndPassword(email: email, password: password)
+            .then((authResult) {
+          _uid = authResult.user!.uid;
+          user = authResult.user!;
+          FirebaseStorage.instance
+              .refFromURL(
+                  'gs://petkeeper-7a537.appspot.com/profilePictures/$_uid')
+              .putFile(File(profilePicture!.path))
+              .then((fileRef) {
+            fileRef.ref.getDownloadURL().then((value) {
+              FirebaseFirestore.instance.collection('users').doc(_uid).set({
+                'username': name,
+                'email': email,
+                'phoneNumber': phoneNumber,
+                'downloadurl': value
+              });
+              _username = name;
+              _email = email;
+              _phoneNumber = phoneNumber;
+            });
+          });
+        });
       }
-      _uid = authResult.user!.uid;
     } on PlatformException catch (err) {
       String? message = 'An error has occurred,please check your credentials';
 
@@ -75,15 +78,17 @@ class AuthProvider with ChangeNotifier {
   }
 
   String? get name {
-    return _name;
+    return _username;
   }
 
   Future<void> fetchExtraUserInfo() async {
-    _uid = FirebaseAuth.instance.currentUser!.uid;
+    _uid = _auth.currentUser!.uid;
+    user = _auth.currentUser!;
     var snapshot =
         await FirebaseFirestore.instance.collection('users').doc(_uid).get();
-    _name = await snapshot.data()!['username'];
-    _email = await snapshot.data()!['email'];
-    _phoneNumber = await snapshot.data()!['phoneNumber'];
+    _username = snapshot.data()!['username'];
+    _email = snapshot.data()!['email'];
+    _phoneNumber = snapshot.data()!['phoneNumber'];
+    _profilePictureUrl = snapshot.data()!['downloadurl'];
   }
 }

@@ -184,7 +184,7 @@ class PostScreen extends StatelessWidget {
             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               RadiantGradientMask(
                 child: const Icon(
-                  Icons.fastfood,
+                  Icons.food_bank,
                   size: 20,
                   color: Colors.white,
                 ),

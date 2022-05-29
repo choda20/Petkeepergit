@@ -21,22 +21,46 @@ class homeScreen extends StatefulWidget {
 }
 
 class _homeScreenState extends State<homeScreen> {
-  bool _isLoading = true;
+  bool _isInit = true;
+
   @override
-  void didChangeDependencies() async {
-    setState(() {
-      _isLoading = true;
-    });
-    await Provider.of<AuthProvider>(context, listen: false)
-        .fetchExtraUserInfo();
-    await Provider.of<PostsProvider>(context, listen: false).fetchPosts();
-    await Provider.of<RatingProvider>(context, listen: false).fetchRatings();
-    await Provider.of<UserProvider>(context, listen: false).fetchUsersData();
-    await Provider.of<RequestProvider>(context, listen: false).fetchRequests();
+  void didChangeDependencies() {
+    if (_isInit) {
+      print('didChange has started.');
+      try {
+        Provider.of<AuthProvider>(context, listen: false)
+            .fetchExtraUserInfo()
+            .then((value) {
+          Provider.of<PostsProvider>(context, listen: false)
+              .fetchPosts()
+              .then((value) {
+            Provider.of<RatingProvider>(context, listen: false)
+                .fetchRatings()
+                .then((value) {
+              Provider.of<UserProvider>(context, listen: false)
+                  .fetchUsersData()
+                  .then((value) {
+                Provider.of<RequestProvider>(context, listen: false)
+                    .fetchRequests()
+                    .then((value) {
+                  Provider.of<FiltersProvider>(context, listen: false)
+                      .resetFilters();
+                  setState(() {
+                    _isInit = false;
+                    print('didChange has ended.');
+                  });
+                });
+              });
+            });
+          });
+        });
+      } catch (e) {
+        print(e);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
     super.didChangeDependencies();
-    setState(() {
-      _isLoading = false;
-    });
   }
 
   Widget build(BuildContext context) {
@@ -56,7 +80,6 @@ class _homeScreenState extends State<homeScreen> {
             filterProvider.startingDate,
             filterProvider.endingDate),
         unFilteredPostList);
-
     return Scaffold(
         backgroundColor: const Color(0xffeaeaea),
         appBar: AppBar(
@@ -68,9 +91,9 @@ class _homeScreenState extends State<homeScreen> {
                       colors: <Color>[Color(0xfffe5858), Color(0xffee9617)]))),
           title: const Text('PetKeeper'),
         ),
-        drawer: _isLoading
+        drawer: _isInit
             ? const Drawer(
-                child: CircularProgressIndicator(),
+                child: Center(child: CircularProgressIndicator()),
               )
             : AppDrawer(),
         floatingActionButton:
@@ -95,16 +118,8 @@ class _homeScreenState extends State<homeScreen> {
               unFilteredPostList =
                   requestProvider.getPendingPosts(unFilteredPosts);
               setState(() {
-                filteredPostList = postProvider.filterResults(
-                    Filter(
-                        filterProvider.foodValue,
-                        filterProvider.petsValue,
-                        filterProvider.walksValue,
-                        filterProvider.waterValue,
-                        filterProvider.startingSalaryValue,
-                        filterProvider.startingDate,
-                        filterProvider.endingDate),
-                    unFilteredPostList);
+                _isInit = true;
+                didChangeDependencies();
               });
             },
           ),
@@ -147,10 +162,11 @@ class _homeScreenState extends State<homeScreen> {
             onTap: () {
               Navigator.of(context).pushNamed('/new_post-screen',
                   arguments: NewPostScreenArgs(null, false));
+              setState(() {});
             },
           ),
         ]),
-        body: _isLoading
+        body: _isInit
             ? const Center(child: CircularProgressIndicator())
             : filteredPostList.isEmpty
                 ? const Center(
