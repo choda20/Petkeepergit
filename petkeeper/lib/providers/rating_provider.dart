@@ -66,8 +66,8 @@ class RatingProvider with ChangeNotifier {
       ratingId = value.id;
       newRating.ratingId = ratingId;
       _ratings.add(newRating);
+      notifyListeners();
     });
-    notifyListeners();
   }
 
   void updateRating(Rating updatedRating) {
@@ -82,7 +82,7 @@ class RatingProvider with ChangeNotifier {
     }).then((value) {
       _ratings[ratingIndex].description = updatedRating.description;
       _ratings[ratingIndex].stars = updatedRating.stars;
+      notifyListeners();
     });
-    notifyListeners();
   }
 }

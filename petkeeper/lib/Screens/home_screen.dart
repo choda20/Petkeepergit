@@ -65,6 +65,7 @@ class _homeScreenState extends State<homeScreen> {
 
   Widget build(BuildContext context) {
     final filterProvider = Provider.of<FiltersProvider>(context).filter;
+    final currentUid = Provider.of<AuthProvider>(context).user.uid;
     final postProvider = Provider.of<PostsProvider>(context);
     final requestProvider = Provider.of<RequestProvider>(context);
     List<Post> unFilteredPosts = postProvider.getOngingPosts(postProvider.post);
@@ -79,7 +80,8 @@ class _homeScreenState extends State<homeScreen> {
             filterProvider.startingSalaryValue,
             filterProvider.startingDate,
             filterProvider.endingDate),
-        unFilteredPostList);
+        unFilteredPostList,
+        currentUid);
     return Scaffold(
         backgroundColor: const Color(0xffeaeaea),
         appBar: AppBar(

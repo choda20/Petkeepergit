@@ -6,6 +6,7 @@ import '../models/request.dart';
 import '../providers/request_provider.dart';
 import '../providers/auth_provider.dart';
 import '../models/user.dart';
+import '../widgets/gradient_button.dart';
 import '../providers/posts_provider.dart';
 import '../providers/user_provider.dart';
 import '../screens/screen_args/post_screen_args.dart';
@@ -80,6 +81,7 @@ class PostScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            const SizedBox(height: 7),
             Row(children: [
               const SizedBox(width: 5),
               Padding(
@@ -213,13 +215,15 @@ class PostScreen extends StatelessWidget {
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
                 )),
-            const SizedBox(height: 15),
-            SingleChildScrollView(
-              child: Text(args.postData.description,
-                  style: const TextStyle(
-                      fontSize: 20, color: Color.fromARGB(255, 35, 34, 34))),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SingleChildScrollView(
+                child: Text(args.postData.description,
+                    style: const TextStyle(
+                        fontSize: 20, color: Color.fromARGB(255, 35, 34, 34))),
+              ),
             ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 10),
             const Text('Contact information',
                 style: TextStyle(
                   fontSize: 25,
@@ -252,28 +256,16 @@ class PostScreen extends StatelessWidget {
                   style: const TextStyle(
                       fontSize: 20, color: Color.fromARGB(255, 35, 34, 34))),
             ]),
-            const SizedBox(height: 15),
+            const SizedBox(height: 25),
             if (currentUserId != poster.userId && !args.isFromProfileScreen)
               request.hasRequested(
                           currentUserId, poster.userId, args.postData.postId) ==
                       false
-                  ? ButtonTheme(
-                      child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                              primary: Theme.of(context).primaryColor),
-                          onPressed: () {
-                            request.addRequest(Request(postId, poster.userId,
-                                currentUserId, false, ''));
-                            Navigator.of(context).pop();
-                          },
-                          icon: const Icon(
-                            Icons.done,
-                            color: Colors.white,
-                          ),
-                          label: const Text(
-                            'Apply',
-                            style: TextStyle(color: Colors.white),
-                          )))
+                  ? GradientButton(() {
+                      request.addRequest(Request(
+                          postId, poster.userId, currentUserId, false, ''));
+                      Navigator.of(context).pop();
+                    }, 40, 120, Icons.done, 'Apply', 20)
                   : const Text('Already requested',
                       style: TextStyle(
                           fontSize: 20, color: Color.fromARGB(255, 35, 34, 34)))

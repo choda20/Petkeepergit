@@ -41,7 +41,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
     return value;
   }
 
-  String? get _error {
+  String? get _salaryError {
     final text = _salaryController.text;
     if (text.isEmpty) {
       return '';
@@ -52,13 +52,36 @@ class _FiltersScreenState extends State<FiltersScreen> {
     return null;
   }
 
+  String? get _endingDateError {
+    final text = _endingDateController.text;
+    DateTime? end = DateTime.tryParse(text);
+    DateTime? start = DateTime.tryParse(_startingDateController.text);
+    if (end != null && start != null && end.isBefore(start)) {
+      return 'Ending date is before Starting date';
+    }
+
+    return null;
+  }
+
+  String? get _startDateError {
+    final text = _startingDateController.text;
+    DateTime? start = DateTime.tryParse(text);
+    DateTime? end = DateTime.tryParse(_endingDateController.text);
+    if (end != null && start != null && start.isAfter(end)) {
+      return 'Starting date is after Ending date';
+    }
+
+    return null;
+  }
+
   TextField DatePicker(int indicator) {
     return TextField(
       controller:
           indicator == 0 ? _startingDateController : _endingDateController,
       onTap: () async {
         DateTime? pickedDate = await showDatePicker(
-            initialDate: indicator == 0
+            initialDate: indicator == 0 &&
+                    DateTime.tryParse(_startingDateController.text) == null
                 ? DateTime.now()
                 : DateTime.parse(_startingDateController.text),
             context: context,
@@ -76,10 +99,11 @@ class _FiltersScreenState extends State<FiltersScreen> {
           });
         }
       },
-      decoration: const InputDecoration(
-          focusedBorder: UnderlineInputBorder(
+      decoration: InputDecoration(
+          errorText: indicator == 0 ? _startDateError : _endingDateError,
+          focusedBorder: const UnderlineInputBorder(
               borderSide: BorderSide(color: Color(0xffee9617))),
-          enabledBorder: UnderlineInputBorder(
+          enabledBorder: const UnderlineInputBorder(
               borderSide: BorderSide(color: Color(0xffee9617)))),
       style: const TextStyle(fontSize: 22),
       keyboardType: TextInputType.none,
@@ -109,219 +133,276 @@ class _FiltersScreenState extends State<FiltersScreen> {
           const SizedBox(
             height: 20,
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              RadiantGradientMask(
-                child: const Icon(
-                  Icons.pets,
-                  size: 22,
-                  color: Colors.white,
-                ),
+          Center(
+            child: SizedBox(
+              width: 300,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      RadiantGradientMask(
+                        child: const Icon(
+                          Icons.pets,
+                          size: 22,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const Text(
+                        'Number of pets ',
+                        style: TextStyle(fontSize: 22),
+                      ),
+                    ],
+                  ),
+                  DropdownButton<String>(
+                      value: _dropdownPetsValue,
+                      items:
+                          values.map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(
+                              value.toString(),
+                              style: const TextStyle(fontSize: 22),
+                            ));
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _dropdownPetsValue = newValue!;
+                          _petsValue =
+                              int.parse(allToSeven(_dropdownPetsValue));
+                        });
+                      })
+                ],
               ),
-              const Text(
-                'Number of pets ',
-                style: TextStyle(fontSize: 22),
-              ),
-              const SizedBox(width: 8),
-              DropdownButton<String>(
-                  value: _dropdownPetsValue,
-                  items: values.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value.toString(),
-                          style: const TextStyle(fontSize: 22),
-                        ));
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _dropdownPetsValue = newValue!;
-                      _petsValue = int.parse(allToSeven(_dropdownPetsValue));
-                    });
-                  })
-            ],
+            ),
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              RadiantGradientMask(
-                child: const Icon(
-                  Icons.directions_walk_outlined,
-                  size: 22,
-                  color: Colors.white,
+          SizedBox(
+            width: 300,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    RadiantGradientMask(
+                      child: const Icon(
+                        Icons.directions_walk_outlined,
+                        size: 22,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const Text(
+                      'Walks Per day ',
+                      style: TextStyle(fontSize: 22),
+                    ),
+                  ],
                 ),
-              ),
-              const Text(
-                'Walks Per day ',
-                style: TextStyle(fontSize: 22),
-              ),
-              const SizedBox(width: 25),
-              DropdownButton<String>(
-                  value: _dropdownWalksValue,
-                  items: values.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value.toString(),
-                          style: const TextStyle(fontSize: 22),
-                        ));
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _dropdownWalksValue = newValue!;
-                      _walksValue = int.parse(allToSeven(_dropdownWalksValue));
-                    });
-                  })
-            ],
+                DropdownButton<String>(
+                    value: _dropdownWalksValue,
+                    items: values.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value.toString(),
+                            style: const TextStyle(fontSize: 22),
+                          ));
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _dropdownWalksValue = newValue!;
+                        _walksValue =
+                            int.parse(allToSeven(_dropdownWalksValue));
+                      });
+                    })
+              ],
+            ),
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              RadiantGradientMask(
-                child: const Icon(
-                  Icons.fastfood,
-                  size: 22,
-                  color: Colors.white,
+          SizedBox(
+            width: 300,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    RadiantGradientMask(
+                      child: const Icon(
+                        Icons.fastfood,
+                        size: 22,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const Text(
+                      'Feeding Per day ',
+                      style: TextStyle(fontSize: 22),
+                    ),
+                  ],
                 ),
-              ),
-              const Text(
-                'Feeding Per day ',
-                style: TextStyle(fontSize: 22),
-              ),
-              const SizedBox(width: 8),
-              DropdownButton<String>(
-                  value: _dropdownFoodValue,
-                  items: values.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value.toString(),
-                          style: const TextStyle(fontSize: 22),
-                        ));
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _dropdownFoodValue = newValue!;
-                      _foodValue = int.parse(allToSeven(_dropdownFoodValue));
-                    });
-                  })
-            ],
+                DropdownButton<String>(
+                    value: _dropdownFoodValue,
+                    items: values.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value.toString(),
+                            style: const TextStyle(fontSize: 22),
+                          ));
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _dropdownFoodValue = newValue!;
+                        _foodValue = int.parse(allToSeven(_dropdownFoodValue));
+                      });
+                    })
+              ],
+            ),
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              RadiantGradientMask(
-                child: const Icon(
-                  Icons.water_drop,
-                  size: 22,
-                  color: Colors.white,
+          SizedBox(
+            width: 300,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    RadiantGradientMask(
+                      child: const Icon(
+                        Icons.water_drop,
+                        size: 22,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const Text(
+                      'Watering Per day ',
+                      style: TextStyle(fontSize: 22),
+                    ),
+                  ],
                 ),
-              ),
-              const Text(
-                'Watering Per day ',
-                style: TextStyle(fontSize: 22),
-              ),
-              const SizedBox(width: 8),
-              DropdownButton<String>(
-                  value: _dropdownWaterValue,
-                  items: values.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value.toString(),
-                          style: const TextStyle(fontSize: 22),
-                        ));
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _dropdownWaterValue = newValue!;
-                      _waterValue = int.parse(allToSeven(_dropdownWaterValue));
-                    });
-                  })
-            ],
+                DropdownButton<String>(
+                    value: _dropdownWaterValue,
+                    items: values.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value.toString(),
+                            style: const TextStyle(fontSize: 22),
+                          ));
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _dropdownWaterValue = newValue!;
+                        _waterValue =
+                            int.parse(allToSeven(_dropdownWaterValue));
+                      });
+                    })
+              ],
+            ),
           ),
-          const SizedBox(height: 10),
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            const SizedBox(width: 8),
-            RadiantGradientMask(
-              child: const Icon(
-                Icons.monetization_on,
-                size: 22,
-                color: Colors.white,
-              ),
-            ),
-            const Text(
-              'Starting salary ',
-              style: TextStyle(fontSize: 22),
-            ),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 110,
-              height: 45,
-              child: TextField(
-                style: const TextStyle(fontSize: 22),
-                controller: _salaryController,
-                decoration: InputDecoration(
-                  enabledBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xffee9617))),
-                  focusedBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xffee9617))),
-                  errorText: _error,
-                ),
-                keyboardType: TextInputType.number,
-                onChanged: (text) {
-                  if (_error == null) {
-                    setState(() {
-                      _salaryValue = int.parse(text);
-                    });
-                  } else {
-                    setState(() {});
-                  }
-                },
-              ),
-            ),
-          ]),
-          const SizedBox(height: 15),
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            RadiantGradientMask(
-              child: const Icon(
-                Icons.calendar_month,
-                size: 22,
-                color: Colors.white,
-              ),
-            ),
-            const Text(
-              'Starting date ',
-              style: TextStyle(fontSize: 22),
-            ),
-            const SizedBox(width: 8),
-            SizedBox(width: 125, height: 25, child: DatePicker(0))
-          ]),
-          const SizedBox(height: 25),
-          _startingDateController.text == ''
-              ? const SizedBox()
-              : Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  RadiantGradientMask(
-                    child: const Icon(
-                      Icons.calendar_month,
-                      size: 22,
-                      color: Colors.white,
+          const SizedBox(height: 20),
+          SizedBox(
+            width: 300,
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      RadiantGradientMask(
+                        child: const Icon(
+                          Icons.monetization_on,
+                          size: 22,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const Text(
+                        'Starting salary ',
+                        style: TextStyle(fontSize: 22),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    width: 110,
+                    height: 45,
+                    child: TextField(
+                      style: const TextStyle(fontSize: 22),
+                      controller: _salaryController,
+                      decoration: InputDecoration(
+                        enabledBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(color: Color(0xffee9617))),
+                        focusedBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(color: Color(0xffee9617))),
+                        errorText: _salaryError,
+                      ),
+                      keyboardType: TextInputType.number,
+                      onChanged: (text) {
+                        if (_salaryError == null) {
+                          setState(() {
+                            _salaryValue = int.parse(text);
+                          });
+                        } else {
+                          setState(() {});
+                        }
+                      },
                     ),
                   ),
-                  const Text(
-                    'Ending date ',
-                    style: TextStyle(fontSize: 22),
-                  ),
-                  const SizedBox(width: 8),
-                  SizedBox(width: 125, height: 25, child: DatePicker(1))
                 ]),
+          ),
+          const SizedBox(height: 50),
+          SizedBox(
+            width: 300,
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      RadiantGradientMask(
+                        child: const Icon(
+                          Icons.calendar_month,
+                          size: 22,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const Text(
+                        'Starting date ',
+                        style: TextStyle(fontSize: 22),
+                      ),
+                    ],
+                  ),
+                  SizedBox(width: 125, height: 25, child: DatePicker(0))
+                ]),
+          ),
+          const SizedBox(height: 50),
+          DateTime.tryParse(_startingDateController.text) == null
+              ? const SizedBox()
+              : SizedBox(
+                  width: 300,
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            RadiantGradientMask(
+                              child: const Icon(
+                                Icons.calendar_month,
+                                size: 22,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const Text(
+                              'Ending date ',
+                              style: TextStyle(fontSize: 22),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(width: 125, height: 25, child: DatePicker(1))
+                      ]),
+                ),
           const SizedBox(height: 25),
           GradientButton(() {
-            if (_salaryController.text.isNotEmpty && _error == null) {
+            if (_salaryController.text.isNotEmpty &&
+                _salaryError == null &&
+                _endingDateError == null &&
+                _startDateError == null) {
               filtersProvider.setValues(Filter(
                   _foodValue,
                   _petsValue,

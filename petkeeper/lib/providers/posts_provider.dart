@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:intl/intl.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -32,24 +33,6 @@ class PostsProvider with ChangeNotifier {
     }
   }
 
-  void replaceImage(XFile postImage, String postId) {
-    final postIndex = _posts.indexWhere((element) => element.postId == postId);
-    FirebaseStorage.instance
-        .refFromURL('gs://petkeeper-7a537.appspot.com/images/$postId')
-        .delete()
-        .then((value) {
-      FirebaseStorage.instance
-          .refFromURL('gs://petkeeper-7a537.appspot.com/images/$postId')
-          .putFile(File(postImage.path))
-          .then((refrence) {
-        refrence.ref.getDownloadURL().then((value) {
-          _posts[postIndex].downloadUrl = value;
-          notifyListeners();
-        });
-      });
-    });
-  }
-
   List<Post> get post {
     return [..._posts];
   }
@@ -58,18 +41,23 @@ class PostsProvider with ChangeNotifier {
     final postIndex = _posts.indexWhere((element) {
       return element.postId == postId;
     });
-    _posts.remove(_posts[postIndex]);
+
     FirebaseFirestore.instance
         .collection('posts')
         .doc(postId)
         .delete()
         .then((value) {
-      notifyListeners();
+      FirebaseStorage.instance
+          .refFromURL(_posts[postIndex].downloadUrl)
+          .delete()
+          .then((value) {
+        _posts.remove(_posts[postIndex]);
+        notifyListeners();
+      });
     });
   }
 
   void addPost(Post newPost, XFile postImage) {
-    print(postImage.path);
     late String postId;
     final docPath = FirebaseFirestore.instance.collection('posts');
     docPath.add({
@@ -103,11 +91,33 @@ class PostsProvider with ChangeNotifier {
     });
   }
 
+  void replaceImage(XFile postImage, String postId, Post newPost) {
+    final postIndex = _posts.indexWhere((element) => element.postId == postId);
+    _posts[postIndex].downloadUrl =
+        'https://firebasestorage.googleapis.com/v0/b/petkeeper-7a537.appspot.com/o/empty.jpg?alt=media&token=a653f578-0fff-4ef1-ab35-40fbd355c534';
+    notifyListeners();
+    FirebaseStorage.instance
+        .refFromURL('gs://petkeeper-7a537.appspot.com/images/$postId')
+        .delete()
+        .then((value) {
+      FirebaseStorage.instance
+          .refFromURL('gs://petkeeper-7a537.appspot.com/images/$postId')
+          .putFile(File(postImage.path))
+          .then((refrence) {
+        refrence.ref.getDownloadURL().then((value) {
+          newPost.downloadUrl = value;
+          changePost(newPost, postId);
+        });
+      });
+    });
+  }
+
   void changePost(Post newPost, String postId) {
     final postIndex = _posts.indexWhere((element) {
       return element.postId == postId;
     });
     _posts[postIndex].startingDate = newPost.startingDate;
+    _posts[postIndex].downloadUrl = newPost.downloadUrl;
     _posts[postIndex].endingDate = newPost.endingDate;
     _posts[postIndex].description = newPost.description;
     _posts[postIndex].feeding = newPost.feeding;
@@ -133,7 +143,8 @@ class PostsProvider with ChangeNotifier {
     });
   }
 
-  List<Post> filterResults(Filter filter, List<Post> unFilteredPosts) {
+  List<Post> filterResults(
+      Filter filter, List<Post> unFilteredPosts, String uid) {
     bool waterReset = false;
     bool petReset = false;
     bool walksReset = false;
@@ -186,6 +197,7 @@ class PostsProvider with ChangeNotifier {
       DateTime postStartingDate = DateTime.parse(post.startingDate);
       DateTime postEndingDate = DateTime.parse(post.endingDate);
       if (post.feeding == filter.foodValue &&
+          post.userId != uid &&
           post.walks == filter.walksValue &&
           post.petNum == filter.petsValue &&
           post.watering == filter.waterValue &&
@@ -235,10 +247,12 @@ class PostsProvider with ChangeNotifier {
   }
 
   List<Post> getPastPosts(List<Post> postList) {
+    final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
     List<Post> pastPosts = [];
     for (var post in postList) {
       DateTime endDate = DateTime.parse(post.endingDate);
-      if (endDate.isBefore(DateTime.now())) {
+      if (endDate.isBefore(DateTime.now()) &&
+          DateFormat('yyyy-MM-dd').format(endDate) != date) {
         pastPosts.add(post);
       }
     }
@@ -246,10 +260,12 @@ class PostsProvider with ChangeNotifier {
   }
 
   List<Post> getOngingPosts(List<Post> postList) {
+    final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
     List<Post> ongingPosts = [];
     for (var post in postList) {
       DateTime endDate = DateTime.parse(post.endingDate);
-      if (endDate.isAfter(DateTime.now())) {
+      if (endDate.isAfter(DateTime.now()) ||
+          DateFormat('yyyy-MM-dd').format(endDate) == date) {
         ongingPosts.add(post);
       }
     }

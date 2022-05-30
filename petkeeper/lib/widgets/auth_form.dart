@@ -1,14 +1,11 @@
-import 'dart:ffi';
 import 'dart:io';
-
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:petkeeper/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:simple_gradient_text/simple_gradient_text.dart';
 
-import '../widgets/AppDrawer.dart';
+import '../providers/auth_provider.dart';
+import '../widgets/gradient_button.dart';
 
 class AuthForm extends StatefulWidget {
   @override
@@ -215,31 +212,31 @@ class _AuthFormState extends State<AuthForm> {
                                 borderSide: BorderSide(color: Colors.white))),
                         style: const TextStyle(color: Colors.white),
                       ),
+                    const SizedBox(height: 15),
                     if (!_isLoading)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          ElevatedButton(
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
-                                  const Color(0xffee9617)),
-                              shape: MaterialStateProperty.all<
-                                      RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20))),
-                            ),
-                            onPressed: _trySubmit,
-                            child: Text(_isLogin ? 'Login' : 'Sign up'),
-                          ),
+                          GradientButton(
+                              _trySubmit,
+                              _isLogin ? 40 : 40,
+                              _isLogin ? 80 : 100,
+                              Icons.upload,
+                              _isLogin ? 'Login' : 'Sign up',
+                              15),
+                          const SizedBox(width: 10),
                           TextButton(
                             onPressed: () {
                               setState(() {
                                 _isLogin = !_isLogin;
                               });
                             },
-                            child: Text(
+                            child: GradientText(
                               _isLogin ? 'Sign up' : 'Login',
-                              style: const TextStyle(color: Color(0xffee9617)),
+                              colors: const [
+                                Color(0xfffe5858),
+                                Color(0xffee9617)
+                              ],
                             ),
                           ),
                         ],

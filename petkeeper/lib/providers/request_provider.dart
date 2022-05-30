@@ -52,8 +52,8 @@ class RequestProvider with ChangeNotifier {
       requestId = docPath.id;
       newRequest.requestId = requestId;
       _requests.add(newRequest);
+      notifyListeners();
     });
-    notifyListeners();
   }
 
   List<Post> getPendingPosts(List<Post> postList) {
@@ -158,36 +158,41 @@ class RequestProvider with ChangeNotifier {
     return postId;
   }
 
-  void deleteRequest(String requestId) async {
+  void deleteRequest(String requestId) {
     final requestIndex =
         _requests.indexWhere((element) => element.requestId == requestId);
-    await FirebaseFirestore.instance
+    FirebaseFirestore.instance
         .collection('requests')
         .doc(_requests[requestIndex].requestId)
-        .delete();
-    _requests.removeAt(requestIndex);
-    notifyListeners();
+        .delete()
+        .then((value) {
+      _requests.removeAt(requestIndex);
+      notifyListeners();
+    });
   }
 
-  void acceptRequest(String requestId, String postId) async {
+  void acceptRequest(String requestId, String postId) {
     List<Request> pastRequests = _requests
         .where((element) =>
             element.requestId != requestId && element.postId == postId)
         .toList();
     final requestIndex =
         _requests.indexWhere((element) => element.requestId == requestId);
-    await FirebaseFirestore.instance
+    FirebaseFirestore.instance
         .collection('requests')
         .doc(_requests[requestIndex].requestId)
-        .update({'status': true});
-    _requests[requestIndex].status == true;
-    for (var outDatedRequests in pastRequests) {
-      await FirebaseFirestore.instance
-          .collection('requests')
-          .doc(outDatedRequests.requestId)
-          .delete();
-      _requests.remove(outDatedRequests);
-    }
-    notifyListeners();
+        .update({'status': true}).then((value) {
+      _requests[requestIndex].status == true;
+      for (var outDatedRequests in pastRequests) {
+        FirebaseFirestore.instance
+            .collection('requests')
+            .doc(outDatedRequests.requestId)
+            .delete()
+            .then((value) {
+          _requests.remove(outDatedRequests);
+        });
+        notifyListeners();
+      }
+    });
   }
 }

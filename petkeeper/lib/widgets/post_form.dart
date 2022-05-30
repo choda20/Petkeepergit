@@ -40,9 +40,12 @@ class _PostFormState extends State<PostForm> {
     DateTime startingDate = DateTime.parse('2020-01-01');
     DateTime endingDate = DateTime.parse('2021-01-01');
     bool hasDates = true;
-    if (_startingDate == '' || _endinggDate == '' || _dropdownPetValue == 0) {
+    if (_startingDate == '' || _endinggDate == '') {
       isValid = false;
       hasDates = false;
+    }
+    if (_dropdownPetValue == 0) {
+      isValid = false;
     }
     if (_startingDate != '' && _endinggDate != '') {
       startingDate = DateTime.parse(_startingDate);
@@ -57,16 +60,22 @@ class _PostFormState extends State<PostForm> {
         newImage = true;
       }
     }
+    bool validDates(DateTime startingDate, DateTime endingDate) {
+      if (startingDate.isBefore(endingDate) || startingDate == endingDate) {
+        return true;
+      }
+      return false;
+    }
 
     try {
       if (isValid != null &&
               isValid &&
               widget.postImage != null &&
-              startingDate.isBefore(endingDate) ||
+              validDates(startingDate, endingDate) ||
           isValid != null &&
               isValid &&
               newImage == false &&
-              startingDate.isBefore(endingDate)) {
+              validDates(startingDate, endingDate)) {
         if (widget.isEditing == false) {
           Provider.of<PostsProvider>(context, listen: false).addPost(
               Post(
@@ -85,26 +94,40 @@ class _PostFormState extends State<PostForm> {
               widget.postImage!);
         } else {
           _postId = widget.postdata!.postId;
-          String downloadUrl = widget.postdata!.downloadUrl;
           if (newImage == true) {
-            Provider.of<PostsProvider>(context, listen: false)
-                .replaceImage(widget.postImage!, _postId);
+            Provider.of<PostsProvider>(context, listen: false).replaceImage(
+                widget.postImage!,
+                _postId,
+                Post(
+                    downloadUrl: '',
+                    petNum: _dropdownPetValue,
+                    postId: _postId,
+                    userId: widget.userId,
+                    startingDate: _startingDate,
+                    endingDate: _endinggDate,
+                    title: _title,
+                    description: _jobDescription,
+                    salary: _salary,
+                    walks: _dropdownWalksValue,
+                    feeding: _dropdownFeedingValue,
+                    watering: _dropdownWaterValue));
+          } else {
+            Provider.of<PostsProvider>(context, listen: false).changePost(
+                Post(
+                    downloadUrl: widget.postdata!.downloadUrl,
+                    petNum: _dropdownPetValue,
+                    postId: _postId,
+                    userId: widget.userId,
+                    startingDate: _startingDate,
+                    endingDate: _endinggDate,
+                    title: _title,
+                    description: _jobDescription,
+                    salary: _salary,
+                    walks: _dropdownWalksValue,
+                    feeding: _dropdownFeedingValue,
+                    watering: _dropdownWaterValue),
+                widget.postdata!.postId);
           }
-          Provider.of<PostsProvider>(context, listen: false).changePost(
-              Post(
-                  downloadUrl: downloadUrl,
-                  petNum: _dropdownPetValue,
-                  postId: _postId,
-                  userId: widget.userId,
-                  startingDate: _startingDate,
-                  endingDate: _endinggDate,
-                  title: _title,
-                  description: _jobDescription,
-                  salary: _salary,
-                  walks: _dropdownWalksValue,
-                  feeding: _dropdownFeedingValue,
-                  watering: _dropdownWaterValue),
-              widget.postdata!.postId);
         }
         Navigator.of(context).pop();
       }
@@ -112,7 +135,9 @@ class _PostFormState extends State<PostForm> {
       print(e.toString());
     }
 
-    if (!startingDate.isBefore(endingDate) && hasDates) {
+    if (!validDates(startingDate, endingDate) &&
+        !startingDate.isBefore(endingDate) &&
+        hasDates) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Starting date is after ending date.'),
           backgroundColor: Colors.red));
@@ -350,7 +375,7 @@ class _PostFormState extends State<PostForm> {
                             const TextStyle(color: Colors.black, fontSize: 17),
                         underline:
                             Container(height: 2, color: Color(0xffee9617)),
-                        value: _dropdownWaterValue,
+                        value: _dropdownWalksValue,
                         items: <int>[0, 1, 2, 3, 4, 5, 6]
                             .map<DropdownMenuItem<int>>((int value) {
                           return DropdownMenuItem<int>(
@@ -360,7 +385,7 @@ class _PostFormState extends State<PostForm> {
                         }).toList(),
                         onChanged: (newValue) {
                           setState(() {
-                            _dropdownWaterValue = newValue!;
+                            _dropdownWalksValue = newValue!;
                           });
                         }),
                   ]);
@@ -433,7 +458,7 @@ class _PostFormState extends State<PostForm> {
                             const TextStyle(color: Colors.black, fontSize: 17),
                         underline:
                             Container(height: 2, color: Color(0xffee9617)),
-                        value: _dropdownWalksValue,
+                        value: _dropdownWaterValue,
                         items: <int>[0, 1, 2, 3, 4, 5, 6]
                             .map<DropdownMenuItem<int>>((int value) {
                           return DropdownMenuItem<int>(
@@ -443,7 +468,7 @@ class _PostFormState extends State<PostForm> {
                         }).toList(),
                         onChanged: (newValue) {
                           setState(() {
-                            _dropdownWalksValue = newValue!;
+                            _dropdownWaterValue = newValue!;
                           });
                         }),
                   ]);
