@@ -7,7 +7,7 @@ import '../providers/user_provider.dart';
 import '../screens/screen_args/profile_screen_args.dart';
 import '../widgets/post_item.dart';
 import '../widgets/gradient_icons.dart';
-import '../models/rating.dart';
+import '../screens/screen_args/edit_user_screen_args.dart';
 import '../providers/rating_provider.dart';
 import '../widgets/rating_item.dart';
 
@@ -28,9 +28,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final currentUId = Provider.of<AuthProvider>(context).user.uid;
     final userData =
         Provider.of<UserProvider>(context).getUserData(args.userId);
+    bool isSameUser = currentUId == userData.userId;
+
     final postProvider = Provider.of<PostsProvider>(context);
     final userPostList = postProvider.getUserPosts(args.userId);
     final postList = Provider.of<PostsProvider>(context).post;
+
     final ratingProvider = Provider.of<RatingProvider>(context);
     final ratingList = ratingProvider.getUserRatings(args.userId);
     final postRatings = ratingList
@@ -70,6 +73,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ]),
         backgroundColor: const Color(0xffeaeaea),
         appBar: AppBar(
+            actions: [
+              isSameUser
+                  ? Padding(
+                      padding: const EdgeInsets.only(right: 15.0),
+                      child: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pushNamed('/edit-user-screen',
+                                arguments: EditUserScreenArgs(userData));
+                          },
+                          child: const Icon(
+                            Icons.edit,
+                            size: 30.0,
+                          )))
+                  : const SizedBox(),
+            ],
             title: currentUId == args.userId
                 ? const Text('Your profile')
                 : Text(userData.userName + 's profile'),
@@ -85,7 +103,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         body: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 10),
+            const SizedBox(height: 30),
             CircleAvatar(
                 radius: 100,
                 backgroundImage: NetworkImage(userData.downloadurl)),
@@ -113,22 +131,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             Color.fromARGB(255, 35, 34, 34))),
                               ]),
                           const SizedBox(height: 20),
-                          Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                RadiantGradientMask(
-                                  child: const Icon(
-                                    Icons.email,
-                                    size: 25,
-                                    color: Colors.white,
+                          FittedBox(
+                            child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  RadiantGradientMask(
+                                    child: const Icon(
+                                      Icons.email,
+                                      size: 25,
+                                      color: Colors.white,
+                                    ),
                                   ),
-                                ),
-                                Text(' ' + userData.email,
-                                    style: const TextStyle(
-                                        fontSize: 20,
-                                        color:
-                                            Color.fromARGB(255, 35, 34, 34))),
-                              ]),
+                                  Text(' ' + userData.email,
+                                      style: const TextStyle(
+                                          fontSize: 20,
+                                          color:
+                                              Color.fromARGB(255, 35, 34, 34))),
+                                ]),
+                          ),
                         ],
                       )
                     : _choosenData == 0 && userPostList.isEmpty

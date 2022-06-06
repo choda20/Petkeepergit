@@ -30,7 +30,7 @@ class RatingItem extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         color: Colors.black),
                   ),
-                  content: ShowRating(rating),
+                  content: ShowRating(rating, postData),
                 ));
       },
       child: Padding(
@@ -39,47 +39,51 @@ class RatingItem extends StatelessWidget {
           decoration: BoxDecoration(
               border: Border.all(color: Theme.of(context).primaryColor),
               borderRadius: BorderRadius.circular(8)),
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: GradientText(
-                        postData.title,
-                        colors: const [Color(0xfffe5858), Color(0xffee9617)],
-                        style: const TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                      ),
+          child: FittedBox(
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: Row(
+                      children: [
+                        GradientText(
+                          postData.title,
+                          overflow: TextOverflow.ellipsis,
+                          colors: const [Color(0xfffe5858), Color(0xffee9617)],
+                          style: const TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black),
+                        ),
+                        Text(
+                          ' by ${rater.userName}',
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                      ],
                     ),
-                    Text(
-                      'rated by ${rater.userName}',
-                      style: const TextStyle(fontSize: 20),
-                    ),
-                  ],
-                ),
-                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  GradientText(
-                    '${rating.stars}/5',
-                    colors: const [Color(0xfffe5858), Color(0xffee9617)],
-                    style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black),
                   ),
-                  RadiantGradientMask(
-                    child: const Icon(
-                      Icons.star,
-                      size: 25,
-                      color: Colors.white,
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    GradientText(
+                      '${rating.stars}/5',
+                      colors: const [Color(0xfffe5858), Color(0xffee9617)],
+                      style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
                     ),
-                  )
+                    RadiantGradientMask(
+                      child: const Icon(
+                        Icons.star,
+                        size: 25,
+                        color: Colors.white,
+                      ),
+                    )
+                  ]),
                 ]),
-              ]),
+          ),
         ),
       ),
     );

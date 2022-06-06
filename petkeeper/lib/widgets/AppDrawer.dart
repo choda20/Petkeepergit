@@ -7,8 +7,6 @@ import '../providers/user_provider.dart';
 import '../screens/screen_args/profile_screen_args.dart';
 
 class AppDrawer extends StatelessWidget {
-  var _isLoading = true;
-
   @override
   Widget build(BuildContext context) {
     final uid = Provider.of<AuthProvider>(context).user.uid;

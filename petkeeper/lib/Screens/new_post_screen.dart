@@ -17,6 +17,10 @@ class NewPost extends StatefulWidget {
 
 class _NewPostState extends State<NewPost> {
   XFile? _storedImage;
+
+  // טענת כניסה: אין
+  // טענת יציאה: הפעולה מאפשרת למשתמש לצלם תמונה בעזרת מצלמת המכשיר
+  // _storedImage ושומרת את תמונה זו במשתנה
   Future<void> _takePicture() async {
     final imageFile = await ImagePicker()
         .pickImage(source: ImageSource.camera, maxWidth: 250, maxHeight: 250);
@@ -25,6 +29,9 @@ class _NewPostState extends State<NewPost> {
     });
   }
 
+  // טענת כניסה: אין
+  // טענת יציאה: הפעולה מאפשרת למשתמש לבחור תמונה מגלריית המכשיר
+  // _storedImage ושומרת את תמונה זו במשתנה
   Future<void> _choosePicture() async {
     final imageFile = await ImagePicker()
         .pickImage(source: ImageSource.gallery, maxWidth: 250, maxHeight: 250);

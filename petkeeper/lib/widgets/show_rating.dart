@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:simple_gradient_text/simple_gradient_text.dart';
 
+import '../models/post.dart';
+import '../screens/screen_args/post_screen_args.dart';
 import '../models/rating.dart';
 import '../widgets/gradient_icons.dart';
 
 class ShowRating extends StatelessWidget {
   Rating rating;
-  ShowRating(this.rating);
+  Post postData;
+  ShowRating(this.rating, this.postData);
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -37,6 +42,28 @@ class ShowRating extends StatelessWidget {
           SingleChildScrollView(
             child:
                 Text(rating.description, style: const TextStyle(fontSize: 18)),
+          ),
+          const SizedBox(height: 20),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pushNamed('/post-screen',
+                  arguments: PostScreenArgs(postData, false, true, false));
+            },
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              RadiantGradientMask(
+                child: const Icon(
+                  Icons.feed_outlined,
+                  size: 20,
+                  color: Colors.white,
+                ),
+              ),
+              GradientText('To post',
+                  colors: const [Color(0xfffe5858), Color(0xffee9617)],
+                  style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black))
+            ]),
           )
         ]);
   }

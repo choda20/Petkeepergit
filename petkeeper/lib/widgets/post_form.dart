@@ -33,6 +33,10 @@ class _PostFormState extends State<PostForm> {
   TextEditingController _endingDateController = TextEditingController();
   final _postKey = GlobalKey<FormState>();
 
+  // טענת כניסה: אין
+  // טענת יציאה: הפעולה בודקת האם קלטי המשתמש תקינים, ובמידה ולא היא מחזירה הודעת שגיאה.
+  // במידה וקלטי המשתמש תקינים, הפעולה שומרת אותם למסד הנתונים ולזיכרון המקומי ומחזירה את המשתמש למסך הקודם
+  // במידה של שגיאה בעת השמירה תדפיס הפעולה הודעת שגיאה
   void trySubmit() async {
     bool? isValid = _postKey.currentState?.validate();
     FocusScope.of(context).unfocus();
@@ -60,6 +64,10 @@ class _PostFormState extends State<PostForm> {
         newImage = true;
       }
     }
+
+    // טענת כניסה: הפעולה מקבלת שני תאריכים
+    // טענת יציאה: הפעולה בודקת אם התאריכים תקינים - האם תאריך הסיום לאחר תאריך
+    // ההתחלה וההפך, ומחזירה "אמת" אם הם תקינים ו"שקר" אם לא
     bool validDates(DateTime startingDate, DateTime endingDate) {
       if (startingDate.isBefore(endingDate) || startingDate == endingDate) {
         return true;
@@ -152,55 +160,58 @@ class _PostFormState extends State<PostForm> {
     }
   }
 
+  // ענת כניסה: הפעולה מקבלת מספר
+  // טענת יציאה: הפעולה מחזירה שדה המאפשר לבחור תאריך בהתאם למספר שסופק לה
+  // אם המספר הוא 0 יוחזר שדה תאריך התחלתי ואם הוא 1 יוחזר שדה תאריך סיום
+  TextFormField DatePicker(int indicator) {
+    return TextFormField(
+      key: indicator == 0
+          ? const ValueKey('Starting Date')
+          : const ValueKey('Ending Date'),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter a date';
+        }
+        return null;
+      },
+      controller:
+          indicator == 0 ? _startingDateController : _endingDateController,
+      onTap: () async {
+        DateTime? pickedDate = await showDatePicker(
+            initialDate: indicator == 0
+                ? DateTime.now()
+                : DateTime.parse(_startingDateController.text),
+            context: context,
+            firstDate: DateTime.now(),
+            lastDate: DateTime(3000));
+        if (pickedDate != null) {
+          String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+          setState(() {
+            indicator == 0
+                ? _startingDateController.text = formattedDate
+                : _endingDateController.text = formattedDate;
+          });
+        }
+      },
+      decoration: InputDecoration(
+          focusedBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Color(0xffee9617))),
+          icon: RadiantGradientMask(
+              child: const Icon(Icons.calendar_month, color: Colors.white)),
+          labelText: indicator == 0 ? 'Starting date' : 'Ending date',
+          labelStyle: const TextStyle(color: Colors.black),
+          enabledBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Color(0xffee9617)))),
+      style: const TextStyle(color: Colors.black),
+      onSaved: (value) {
+        indicator == 0 ? _startingDate = value! : _endinggDate = value!;
+      },
+      keyboardType: TextInputType.none,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    TextFormField DatePicker(int indicator) {
-      return TextFormField(
-        key: indicator == 0
-            ? const ValueKey('Starting Date')
-            : const ValueKey('Ending Date'),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter a date';
-          }
-          return null;
-        },
-        controller:
-            indicator == 0 ? _startingDateController : _endingDateController,
-        onTap: () async {
-          DateTime? pickedDate = await showDatePicker(
-              initialDate: indicator == 0
-                  ? DateTime.now()
-                  : DateTime.parse(_startingDateController.text),
-              context: context,
-              firstDate: DateTime.now(),
-              lastDate: DateTime(3000));
-          if (pickedDate != null) {
-            String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
-            setState(() {
-              indicator == 0
-                  ? _startingDateController.text = formattedDate
-                  : _endingDateController.text = formattedDate;
-            });
-          }
-        },
-        decoration: InputDecoration(
-            focusedBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: Color(0xffee9617))),
-            icon: RadiantGradientMask(
-                child: const Icon(Icons.calendar_month, color: Colors.white)),
-            labelText: indicator == 0 ? 'Starting date' : 'Ending date',
-            labelStyle: const TextStyle(color: Colors.black),
-            enabledBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: Color(0xffee9617)))),
-        style: const TextStyle(color: Colors.black),
-        onSaved: (value) {
-          indicator == 0 ? _startingDate = value! : _endinggDate = value!;
-        },
-        keyboardType: TextInputType.none,
-      );
-    }
-
     if (widget.isEditing == true) {
       _jobDescription = widget.postdata!.description;
       _startingDate = widget.postdata!.startingDate;

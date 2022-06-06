@@ -4,8 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:simple_gradient_text/simple_gradient_text.dart';
 
 import '../providers/auth_provider.dart';
-import '../widgets/rating_promt.dart';
-import '../providers/user_provider.dart';
+import 'rating_prompt.dart';
 import '../widgets/post_item.dart';
 import '../widgets/gradient_icons.dart';
 import '../providers/request_provider.dart';
@@ -13,28 +12,33 @@ import '../models/post.dart';
 import '../screens/screen_args/profile_screen_args.dart';
 import '../models/request.dart';
 
-class RequestItem extends StatelessWidget {
+class RequestItem extends StatefulWidget {
   Request requestData;
   Post postData;
   bool isHired;
-  bool isAccepted;
-  RequestItem(this.postData, this.requestData, this.isHired, this.isAccepted);
+  RequestItem(this.postData, this.requestData, this.isHired);
 
   @override
+  State<RequestItem> createState() => _RequestItemState();
+}
+
+class _RequestItemState extends State<RequestItem> {
+  @override
   Widget build(BuildContext context) {
-    final userData =
-        Provider.of<UserProvider>(context).getUserData(requestData.requesterId);
     final currentUID = Provider.of<AuthProvider>(context).user.uid;
     final ratingProvider = Provider.of<RatingProvider>(context);
-    if (isHired) {
+    if (widget.isHired) {
       return Row(
         children: [
-          Expanded(flex: 7, child: PostItem(postData, true, false, isAccepted)),
+          Expanded(
+              flex: 7,
+              child: PostItem(widget.postData, true, false, widget.isHired)),
           Column(children: [
             IconButton(
                 onPressed: () {
                   Navigator.of(context).pushNamed('/profile-screen',
-                      arguments: ProfileScreenArgs(requestData.requesterId));
+                      arguments:
+                          ProfileScreenArgs(widget.requestData.requesterId));
                 },
                 icon: RadiantGradientMask(
                     child: const Icon(Icons.person,
@@ -44,7 +48,8 @@ class RequestItem extends StatelessWidget {
             ),
             IconButton(
                 onPressed: () {
-                  ratingProvider.posterHasRated(currentUID, postData.postId) ==
+                  ratingProvider.posterHasRated(
+                              currentUID, widget.postData.postId) ==
                           true
                       ? showDialog(
                           context: context,
@@ -60,8 +65,8 @@ class RequestItem extends StatelessWidget {
                                       fontWeight: FontWeight.bold,
                                       color: Colors.black),
                                 ),
-                                content: RatingPromt(
-                                    postData.postId, false, true, currentUID),
+                                content: RatingPrompt(widget.postData.postId,
+                                    false, true, currentUID),
                               ))
                       : showDialog(
                           context: context,
@@ -77,8 +82,8 @@ class RequestItem extends StatelessWidget {
                                       fontWeight: FontWeight.bold,
                                       color: Colors.black),
                                 ),
-                                content: RatingPromt(
-                                    postData.postId, false, false, currentUID),
+                                content: RatingPrompt(widget.postData.postId,
+                                    false, false, currentUID),
                               ));
                 },
                 icon: RadiantGradientMask(
@@ -90,26 +95,36 @@ class RequestItem extends StatelessWidget {
     } else {
       return Row(children: [
         Expanded(
-          child: PostItem(postData, true, false, isAccepted),
+          child: PostItem(widget.postData, true, false, widget.isHired),
           flex: 7,
         ),
         Column(children: [
           IconButton(
               onPressed: () {
                 Provider.of<RequestProvider>(context, listen: false)
-                    .acceptRequest(requestData.requestId, postData.postId);
+                    .acceptRequest(
+                        widget.requestData.requestId, widget.postData.postId);
               },
               icon: RadiantGradientMask(
                   child:
                       const Icon(Icons.done, color: Colors.white, size: 30))),
           IconButton(
               onPressed: () {
-                Provider.of<RequestProvider>(context, listen: false)
-                    .deleteRequest(requestData.requestId);
+                Navigator.of(context).pushNamed('/profile-screen',
+                    arguments:
+                        ProfileScreenArgs(widget.requestData.requesterId));
               },
               icon: RadiantGradientMask(
                   child:
-                      const Icon(Icons.delete, color: Colors.white, size: 30)))
+                      const Icon(Icons.person, color: Colors.white, size: 35))),
+          IconButton(
+              onPressed: () {
+                Provider.of<RequestProvider>(context, listen: false)
+                    .deleteRequest(widget.requestData.requestId);
+              },
+              icon: RadiantGradientMask(
+                  child:
+                      const Icon(Icons.delete, color: Colors.white, size: 30))),
         ])
       ]);
     }

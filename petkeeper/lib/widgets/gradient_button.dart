@@ -36,7 +36,7 @@ class GradientButton extends StatelessWidget {
             child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               Icon(
                 iconData,
-                size: 22,
+                size: fontSize,
                 color: Colors.white,
               ),
               const SizedBox(width: 5),

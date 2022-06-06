@@ -9,16 +9,15 @@ import '../providers/request_provider.dart';
 
 class JobRequests extends StatelessWidget {
   Post postData;
-  bool isEditing;
   Request requestData;
-  JobRequests(this.postData, this.isEditing, this.requestData);
+  JobRequests(this.postData, this.requestData);
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Expanded(
-          child: PostItem(postData, false, false, false),
+          child: PostItem(postData, false, true, false),
           flex: 7,
         ),
         Expanded(

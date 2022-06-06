@@ -12,10 +12,10 @@ import '../widgets/gradient_icons.dart';
 
 class PostItem extends StatelessWidget {
   PostItem(
-      this.postData, this.isEditing, this.isFromProfileScreen, this.isAccepted);
+      this.postData, this.isEditing, this.isRequestRelevant, this.isAccepted);
   Post postData;
   bool isEditing;
-  bool isFromProfileScreen;
+  bool isRequestRelevant;
   bool isAccepted;
   @override
   Widget build(BuildContext context) {
@@ -50,67 +50,79 @@ class PostItem extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8),
                               child: Image.network(postData.downloadUrl))))),
               const SizedBox(width: 3),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 10),
-                  GradientText(
-                    postData.title,
-                    colors: const [Color(0xfffe5858), Color(0xffee9617)],
-                    style: const TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black),
-                  ),
-                  const SizedBox(width: 7),
-                  currentUser == postData.userId
-                      ? const SizedBox()
-                      : Text('by ${userData.userName}',
-                          style: const TextStyle(fontSize: 18)),
-                  isAccepted ? const SizedBox(height: 5) : const SizedBox(),
-                  isAccepted
-                      ? Row(children: [
-                          const Text('Taken care of by: ',
-                              style: TextStyle(fontSize: 18)),
-                          GradientText(careTakerData.userName,
-                              colors: const [
-                                Color(0xfffe5858),
-                                Color(0xffee9617)
-                              ],
-                              style: const TextStyle(fontSize: 18))
-                        ])
-                      : const SizedBox(),
-                  const SizedBox(height: 2),
-                  Text('From: ' + postData.startingDate,
-                      style: const TextStyle(fontSize: 18)),
-                  const SizedBox(height: 5),
-                  Text('To: ' + postData.endingDate,
-                      style: const TextStyle(fontSize: 18)),
-                  const SizedBox(height: 5),
-                  Row(children: [
-                    Text(postData.petNum.toString(),
-                        style: const TextStyle(fontSize: 18)),
-                    RadiantGradientMask(
-                      child: const Icon(
-                        Icons.pets,
-                        size: 20,
-                        color: Colors.white,
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 10),
+                    FittedBox(
+                      child: GradientText(
+                        postData.title,
+                        colors: const [Color(0xfffe5858), Color(0xffee9617)],
+                        style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black),
                       ),
                     ),
-                  ]),
-                  const SizedBox(height: 5),
-                  Row(children: [
-                    Text(postData.salary.toString(),
+                    const SizedBox(width: 7),
+                    currentUser == postData.userId
+                        ? const SizedBox()
+                        : Row(children: [
+                            Flexible(
+                              child: Text('by ${userData.userName}',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 18)),
+                            ),
+                          ]),
+                    isAccepted ? const SizedBox(height: 5) : const SizedBox(),
+                    isAccepted
+                        ? Row(children: [
+                            const Text('Taken care of by: ',
+                                style: TextStyle(fontSize: 18)),
+                            Flexible(
+                              child: GradientText(careTakerData.userName,
+                                  overflow: TextOverflow.ellipsis,
+                                  colors: const [
+                                    Color(0xfffe5858),
+                                    Color(0xffee9617)
+                                  ],
+                                  style: const TextStyle(fontSize: 18)),
+                            )
+                          ])
+                        : const SizedBox(),
+                    const SizedBox(height: 2),
+                    Text('From: ' + postData.startingDate,
                         style: const TextStyle(fontSize: 18)),
-                    RadiantGradientMask(
-                      child: const Icon(
-                        Icons.monetization_on,
-                        size: 20,
-                        color: Colors.white,
+                    const SizedBox(height: 5),
+                    Text('To: ' + postData.endingDate,
+                        style: const TextStyle(fontSize: 18)),
+                    const SizedBox(height: 5),
+                    Row(children: [
+                      Text(postData.petNum.toString(),
+                          style: const TextStyle(fontSize: 18)),
+                      RadiantGradientMask(
+                        child: const Icon(
+                          Icons.pets,
+                          size: 20,
+                          color: Colors.white,
+                        ),
                       ),
-                    )
-                  ]),
-                ],
+                    ]),
+                    const SizedBox(height: 5),
+                    Row(children: [
+                      Text(postData.salary.toString(),
+                          style: const TextStyle(fontSize: 18)),
+                      RadiantGradientMask(
+                        child: const Icon(
+                          Icons.monetization_on,
+                          size: 20,
+                          color: Colors.white,
+                        ),
+                      )
+                    ]),
+                  ],
+                ),
               )
             ],
           ),
@@ -119,7 +131,7 @@ class PostItem extends StatelessWidget {
       onTap: () {
         Navigator.of(context).pushNamed('/post-screen',
             arguments: PostScreenArgs(
-                postData, isEditing, isFromProfileScreen, isAccepted));
+                postData, isEditing, isRequestRelevant, isAccepted));
       },
     );
   }

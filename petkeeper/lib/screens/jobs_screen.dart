@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:petkeeper/widgets/job_item.dart';
+import 'package:petkeeper/widgets/job_request_item.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/request_provider.dart';
-import '../widgets/past_jobs_item.dart';
+import '../widgets/jobs_item.dart';
 import '../providers/auth_provider.dart';
 import '../providers/posts_provider.dart';
 import '../widgets/post_item.dart';
@@ -77,7 +77,7 @@ class _JobScreenState extends State<JobScreen> {
                     itemCount: ongoingJobs.length,
                     padding: const EdgeInsets.only(bottom: 10, top: 10),
                     itemBuilder: (BuildContext ctx, index) {
-                      return PostItem(ongoingJobs[index], false, false, false);
+                      return JobsItem(ongoingJobs[index], true);
                     }),
               )
             : _selectedIndex == 0 && ongoingJobs.isEmpty
@@ -94,7 +94,7 @@ class _JobScreenState extends State<JobScreen> {
                             itemCount: pastJobs.length,
                             padding: const EdgeInsets.only(bottom: 10, top: 10),
                             itemBuilder: (BuildContext ctx, index) {
-                              return PastJobsItem(pastJobs[index]);
+                              return JobsItem(pastJobs[index], false);
                             }),
                       )
                     : _selectedIndex == 1 && pastJobs.isEmpty
@@ -122,7 +122,6 @@ class _JobScreenState extends State<JobScreen> {
                                         itemBuilder: (BuildContext ctx, index) {
                                           return JobRequests(
                                               pendingPosts[index],
-                                              false,
                                               pendingRequests[index]);
                                         }),
                                   )

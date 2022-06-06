@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../models/filter.dart';
-import '../models/post.dart';
 
 class FiltersProvider with ChangeNotifier {
   Filter filter = Filter(7, 7, 7, 7, 0, '', '');
 
+  // Filter טענת כניסה: הפעולה מקבלת משתנה מסוג
+  // טענת יציאה: הפעולה משווה את ערכי הסינון הנוכחיים לערכי הסינון שהתקבלו ומודיעה על כך למשתנים המשתמשים במחלקה זו
   void setValues(Filter newValues) {
     filter.foodValue = newValues.foodValue;
     filter.walksValue = newValues.walksValue;
@@ -17,6 +18,8 @@ class FiltersProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // טענת כניסה: אין
+  // טענת יציאה: הפעולה מאתחלת את ערכי הסינון לערכים אשר מציגים את כל הפוסטים
   void resetFilters() {
     filter.foodValue = 7;
     filter.walksValue = 7;
@@ -25,33 +28,5 @@ class FiltersProvider with ChangeNotifier {
     filter.startingSalaryValue = 0;
     filter.startingDate = '';
     filter.endingDate = '';
-  }
-
-  int get water {
-    return filter.waterValue;
-  }
-
-  String get startingDate {
-    return filter.startingDate;
-  }
-
-  String get endingDate {
-    return filter.endingDate;
-  }
-
-  int get food {
-    return filter.foodValue;
-  }
-
-  int get salary {
-    return filter.startingSalaryValue;
-  }
-
-  int get walks {
-    return filter.walksValue;
-  }
-
-  int get pets {
-    return filter.petsValue;
   }
 }

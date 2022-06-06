@@ -98,69 +98,80 @@ class PostScreen extends StatelessWidget {
                     ),
                   )),
               const SizedBox(width: 10),
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: [
-                  GradientText(
-                    'Posted by: ',
-                    colors: const [Color(0xfffe5858), Color(0xffee9617)],
-                    style: const TextStyle(fontSize: 20),
-                  ),
-                  Text(poster.userName,
-                      style: const TextStyle(
-                          fontSize: 20, color: Color.fromARGB(255, 35, 34, 34)))
-                ]),
-                const SizedBox(height: 9),
-                Row(children: [
-                  GradientText(
-                    'From: ',
-                    colors: const [Color(0xfffe5858), Color(0xffee9617)],
-                    style: const TextStyle(fontSize: 20),
-                  ),
-                  Text(args.postData.startingDate,
-                      style: const TextStyle(
-                          fontSize: 20, color: Color.fromARGB(255, 35, 34, 34)))
-                ]),
-                const SizedBox(height: 9),
-                Row(children: [
-                  GradientText(
-                    'To: ',
-                    colors: const [Color(0xfffe5858), Color(0xffee9617)],
-                    style: const TextStyle(fontSize: 20),
-                  ),
-                  Text(args.postData.endingDate,
-                      style: const TextStyle(
-                          fontSize: 20, color: Color.fromARGB(255, 35, 34, 34)))
-                ]),
-                const SizedBox(height: 9),
-                Row(children: [
-                  RadiantGradientMask(
-                    child: const Icon(
-                      Icons.monetization_on,
-                      size: 20,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    " " + args.postData.salary.toString() + '\$',
-                    style: const TextStyle(
-                        fontSize: 20, color: Color.fromARGB(255, 35, 34, 34)),
-                  ),
-                ]),
-                const SizedBox(height: 9),
-                Row(children: [
-                  RadiantGradientMask(
-                    child: const Icon(
-                      Icons.pets,
-                      size: 20,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(' ' + args.postData.petNum.toString(),
-                      style: const TextStyle(
-                          fontSize: 20,
-                          color: Color.fromARGB(255, 35, 34, 34))),
-                ]),
-              ]),
+              Flexible(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(children: [
+                        GradientText(
+                          'Posted by: ',
+                          colors: const [Color(0xfffe5858), Color(0xffee9617)],
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                        Flexible(
+                          child: Text(poster.userName,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  fontSize: 20,
+                                  color: Color.fromARGB(255, 35, 34, 34))),
+                        )
+                      ]),
+                      const SizedBox(height: 9),
+                      Row(children: [
+                        GradientText(
+                          'From: ',
+                          colors: const [Color(0xfffe5858), Color(0xffee9617)],
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        Text(args.postData.startingDate,
+                            style: const TextStyle(
+                                fontSize: 20,
+                                color: Color.fromARGB(255, 35, 34, 34)))
+                      ]),
+                      const SizedBox(height: 9),
+                      Row(children: [
+                        GradientText(
+                          'To: ',
+                          colors: const [Color(0xfffe5858), Color(0xffee9617)],
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        Text(args.postData.endingDate,
+                            style: const TextStyle(
+                                fontSize: 20,
+                                color: Color.fromARGB(255, 35, 34, 34)))
+                      ]),
+                      const SizedBox(height: 9),
+                      Row(children: [
+                        RadiantGradientMask(
+                          child: const Icon(
+                            Icons.monetization_on,
+                            size: 20,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          " " + args.postData.salary.toString() + '\$',
+                          style: const TextStyle(
+                              fontSize: 20,
+                              color: Color.fromARGB(255, 35, 34, 34)),
+                        ),
+                      ]),
+                      const SizedBox(height: 9),
+                      Row(children: [
+                        RadiantGradientMask(
+                          child: const Icon(
+                            Icons.pets,
+                            size: 20,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(' ' + args.postData.petNum.toString(),
+                            style: const TextStyle(
+                                fontSize: 20,
+                                color: Color.fromARGB(255, 35, 34, 34))),
+                      ]),
+                    ]),
+              ),
             ]),
             const SizedBox(height: 10),
             const Text('Treatment',
@@ -257,7 +268,7 @@ class PostScreen extends StatelessWidget {
                       fontSize: 20, color: Color.fromARGB(255, 35, 34, 34))),
             ]),
             const SizedBox(height: 25),
-            if (currentUserId != poster.userId && !args.isFromProfileScreen)
+            if (currentUserId != poster.userId && !args.isRequestRelevant)
               request.hasRequested(
                           currentUserId, poster.userId, args.postData.postId) ==
                       false
@@ -268,7 +279,9 @@ class PostScreen extends StatelessWidget {
                     }, 40, 120, Icons.done, 'Apply', 20)
                   : const Text('Already requested',
                       style: TextStyle(
-                          fontSize: 20, color: Color.fromARGB(255, 35, 34, 34)))
+                          fontSize: 20,
+                          color: Color.fromARGB(255, 35, 34, 34))),
+            const SizedBox(height: 20)
           ],
         ),
       ),

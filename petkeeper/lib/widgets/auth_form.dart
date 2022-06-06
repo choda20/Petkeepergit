@@ -15,14 +15,17 @@ class AuthForm extends StatefulWidget {
 class _AuthFormState extends State<AuthForm> {
   var _isLoading = false;
   final _formKey = GlobalKey<FormState>();
-  String? _userEmail = '';
-  String? _userName = '';
+  String _userEmail = '';
+  String _userName = '';
   String _phoneNumber = '';
-  String? _userPassword = '';
+  String _userPassword = '';
   bool _isLogin = false;
   XFile? _storedImage;
   Image defaultImage = Image.asset('assets/A4RnHy7isSNmUEaBpbhl.jpg');
 
+  // טענת כניסה: אין
+  // טענת יציאה: הפעולה מאפשרת למשתמש לבחור תמונה מהגלריה של מכשירו
+  // _storedImage ומאחסנת אותה במשתנה
   Future<void> _choosePicture() async {
     final imageFile = await ImagePicker()
         .pickImage(source: ImageSource.gallery, maxWidth: 250, maxHeight: 250);
@@ -31,6 +34,9 @@ class _AuthFormState extends State<AuthForm> {
     });
   }
 
+  // טענת כניסה: הפעולה מקבלת שתי מחרוזות
+  // טענת יציאה: הפעולה מחזירה אמת אם המחרוזות מכילות ערכים זהים ו"שקר" אם הן לא שוות
+  // או שאינן מכילות ערכים
   bool verifyPasswords(String? password, String? password2) {
     if (password == password2 && password != null && password2 != null) {
       return true;
@@ -38,6 +44,9 @@ class _AuthFormState extends State<AuthForm> {
     return false;
   }
 
+  // טענת כניסה: אין
+  // טענת יציאה: הפעולה מאמתת שקלטי המשתמש תקינים ומנסה לזהות אותו מול
+  // מסד הנתונים. אם פרטי המשתמש אינם תקינים תוצג הודעת שגיאה
   void _trySubmit() {
     _formKey.currentState?.save();
     final isValid = _formKey.currentState?.validate();
@@ -52,13 +61,12 @@ class _AuthFormState extends State<AuthForm> {
       });
       Provider.of<AuthProvider>(context, listen: false).submitAuthForm(
         _storedImage,
-        _userName!.trim(),
-        _userEmail!.trim(),
+        _userName.trim(),
+        _userEmail.trim(),
         _phoneNumber.trim(),
-        _userPassword!.trim(),
+        _userPassword.trim(),
         context,
         _isLogin,
-        _isLoading,
       );
       setState(() {
         _isLoading = !_isLoading;
@@ -71,6 +79,8 @@ class _AuthFormState extends State<AuthForm> {
     }
   }
 
+  // טענת כניסה: הפעולה מקבלת מחרוזת
+  // טענת יציאה: הפעולה מחזירה "אמת" אם המחרוזת היא מספר שלם ו"שקר" אם לא
   bool isNumeric(String num) {
     return int.tryParse(num) != null;
   }
@@ -109,8 +119,8 @@ class _AuthFormState extends State<AuthForm> {
                             if (value == null || value == '') {
                               return 'Please enter a username.';
                             }
-                            if (value.length > 10) {
-                              return 'a usernames maximun length is 10 characters';
+                            if (value.trim().length > 22) {
+                              return 'a usernames maximun length is 22 characters';
                             }
                             return null;
                           },
@@ -122,7 +132,7 @@ class _AuthFormState extends State<AuthForm> {
                                   borderSide: BorderSide(color: Colors.white))),
                           style: const TextStyle(color: Colors.white),
                           onSaved: (value) {
-                            _userName = value;
+                            _userName = value!.trim();
                           },
                           keyboardType: TextInputType.name),
                     TextFormField(
@@ -132,6 +142,9 @@ class _AuthFormState extends State<AuthForm> {
                             !value.contains('@') ||
                             value == '') {
                           return 'Please enter a valid Email address.';
+                        }
+                        if (value.trim().length > 33) {
+                          return 'An emails maximun length is 33 characteres';
                         }
                         return null;
                       },
@@ -143,7 +156,7 @@ class _AuthFormState extends State<AuthForm> {
                               borderSide: BorderSide(color: Colors.white))),
                       style: const TextStyle(color: Colors.white),
                       onSaved: (value) {
-                        _userEmail = value;
+                        _userEmail = value!.trim();
                       },
                       keyboardType: TextInputType.emailAddress,
                     ),
@@ -154,7 +167,7 @@ class _AuthFormState extends State<AuthForm> {
                           if (value == null || !isNumeric(value)) {
                             return 'Please enter a valid phone number.';
                           }
-                          if (value.length > 11) {
+                          if (value.trim().length > 11) {
                             return 'a phone numbers maximun length is 10 characters';
                           }
                           return null;
@@ -167,7 +180,7 @@ class _AuthFormState extends State<AuthForm> {
                                 borderSide: BorderSide(color: Colors.white))),
                         style: const TextStyle(color: Colors.white),
                         onSaved: (value) {
-                          _phoneNumber = value!;
+                          _phoneNumber = value!.trim();
                         },
                         keyboardType: TextInputType.number,
                       ),
@@ -188,7 +201,7 @@ class _AuthFormState extends State<AuthForm> {
                                 borderSide: BorderSide(color: Colors.white))),
                         style: const TextStyle(color: Colors.white),
                         onSaved: (value) {
-                          _userPassword = value;
+                          _userPassword = value!.trim();
                         }),
                     if (!_isLogin)
                       TextFormField(
@@ -198,7 +211,7 @@ class _AuthFormState extends State<AuthForm> {
                           if (check == false) {
                             return 'Unmatching passwords';
                           }
-                          if (value == null || value.length < 7) {
+                          if (value == null || value.trim().length < 7) {
                             return 'Please enter a Password that is at least 7 characters long.';
                           }
                           return null;

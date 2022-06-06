@@ -7,22 +7,26 @@ import '../models/rating.dart';
 import '../providers/request_provider.dart';
 import '../widgets/gradient_icons.dart';
 
-class RatingPromt extends StatefulWidget {
+class RatingPrompt extends StatefulWidget {
   String postId;
   bool isFromWorker;
   bool isEditing;
   String uid;
-  RatingPromt(this.postId, this.isFromWorker, this.isEditing, this.uid);
+  RatingPrompt(this.postId, this.isFromWorker, this.isEditing, this.uid);
   @override
-  State<RatingPromt> createState() => _RatingPromtState();
+  State<RatingPrompt> createState() => _RatingPromptState();
 }
 
-class _RatingPromtState extends State<RatingPromt> {
+class _RatingPromptState extends State<RatingPrompt> {
   TextEditingController _descriptionController = TextEditingController();
   String _description = '';
   int _stars = 1;
   Rating ratingData = Rating('', 0, '', '', '', '', '');
   bool firstTime = true;
+
+  // טענת כניסה: אין
+  // ,טענת יציאה: הפעולה בודקת אם המשתמש הזין תיאור לדירוג
+  // null אם לא הזין המשתמש תיאור תחזיר הפעולה הודעת שגיאה ואם כן תחזיר
   String? get _error {
     final text = _descriptionController.text;
     if (text == '') {

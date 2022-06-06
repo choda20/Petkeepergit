@@ -23,6 +23,10 @@ class homeScreen extends StatefulWidget {
 class _homeScreenState extends State<homeScreen> {
   bool _isInit = true;
 
+  // טענת כניסה: אין
+  // טענת יציאה: הפעולה מפעילה את כל הפעולות ששולפות מידע ממסד הנתונים
+  // מוגדר כ"אמת", בזמן זה מוצג למשתמש _isInit בזמן שהפעולות רצות המשתנה
+  // עיגול טעינה במסך הבית ובמגירת האפליקציות ורק לאחר סיום שליפת המידע מוצגים המסכים
   @override
   void didChangeDependencies() {
     if (_isInit) {
@@ -43,11 +47,18 @@ class _homeScreenState extends State<homeScreen> {
                 Provider.of<RequestProvider>(context, listen: false)
                     .fetchRequests()
                     .then((value) {
-                  Provider.of<FiltersProvider>(context, listen: false)
-                      .resetFilters();
-                  setState(() {
-                    _isInit = false;
-                    print('didChange has ended.');
+                  final expiredPostIds =
+                      Provider.of<PostsProvider>(context, listen: false)
+                          .getExpiredPostIds();
+                  Provider.of<RequestProvider>(context, listen: false)
+                      .deleteExpiredRequests(expiredPostIds)
+                      .then((value) {
+                    Provider.of<FiltersProvider>(context, listen: false)
+                        .resetFilters();
+                    setState(() {
+                      _isInit = false;
+                      print('didChange has ended.');
+                    });
                   });
                 });
               });
@@ -98,76 +109,77 @@ class _homeScreenState extends State<homeScreen> {
                 child: Center(child: CircularProgressIndicator()),
               )
             : AppDrawer(),
-        floatingActionButton:
-            Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-          InkWell(
-            child: ClipOval(
-              child: Container(
-                  decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                          begin: Alignment.bottomLeft,
-                          end: Alignment.topRight,
-                          colors: <Color>[
-                        Color(0xfffe5858),
-                        Color(0xffee9617)
-                      ])),
-                  height: 60,
-                  width: 60,
-                  child: const Icon(Icons.refresh, color: Colors.white)),
-            ),
-            onTap: () {
-              unFilteredPosts = postProvider.post;
-              unFilteredPostList =
-                  requestProvider.getPendingPosts(unFilteredPosts);
-              setState(() {
-                _isInit = true;
-                didChangeDependencies();
-              });
-            },
-          ),
-          const SizedBox(width: 10),
-          InkWell(
-            child: ClipOval(
-              child: Container(
-                  decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                          begin: Alignment.bottomLeft,
-                          end: Alignment.topRight,
-                          colors: <Color>[
-                        Color(0xfffe5858),
-                        Color(0xffee9617)
-                      ])),
-                  height: 60,
-                  width: 60,
-                  child: const Icon(Icons.search, color: Colors.white)),
-            ),
-            onTap: () {
-              Navigator.of(context).pushNamed('/filters-screen');
-            },
-          ),
-          const SizedBox(width: 10),
-          InkWell(
-            child: ClipOval(
-              child: Container(
-                  decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                          begin: Alignment.bottomLeft,
-                          end: Alignment.topRight,
-                          colors: <Color>[
-                        Color(0xfffe5858),
-                        Color(0xffee9617)
-                      ])),
-                  height: 60,
-                  width: 60,
-                  child: const Icon(Icons.add, color: Colors.white)),
-            ),
-            onTap: () {
-              Navigator.of(context).pushNamed('/new_post-screen',
-                  arguments: NewPostScreenArgs(null, false));
-              setState(() {});
-            },
-          ),
-        ]),
+        floatingActionButton: _isInit
+            ? const SizedBox()
+            : Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                InkWell(
+                  child: ClipOval(
+                    child: Container(
+                        decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                                begin: Alignment.bottomLeft,
+                                end: Alignment.topRight,
+                                colors: <Color>[
+                              Color(0xfffe5858),
+                              Color(0xffee9617)
+                            ])),
+                        height: 60,
+                        width: 60,
+                        child: const Icon(Icons.refresh, color: Colors.white)),
+                  ),
+                  onTap: () {
+                    unFilteredPosts = postProvider.post;
+                    unFilteredPostList =
+                        requestProvider.getPendingPosts(unFilteredPosts);
+                    setState(() {
+                      _isInit = true;
+                      didChangeDependencies();
+                    });
+                  },
+                ),
+                const SizedBox(width: 10),
+                InkWell(
+                  child: ClipOval(
+                    child: Container(
+                        decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                                begin: Alignment.bottomLeft,
+                                end: Alignment.topRight,
+                                colors: <Color>[
+                              Color(0xfffe5858),
+                              Color(0xffee9617)
+                            ])),
+                        height: 60,
+                        width: 60,
+                        child: const Icon(Icons.search, color: Colors.white)),
+                  ),
+                  onTap: () {
+                    Navigator.of(context).pushNamed('/filters-screen');
+                  },
+                ),
+                const SizedBox(width: 10),
+                InkWell(
+                  child: ClipOval(
+                    child: Container(
+                        decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                                begin: Alignment.bottomLeft,
+                                end: Alignment.topRight,
+                                colors: <Color>[
+                              Color(0xfffe5858),
+                              Color(0xffee9617)
+                            ])),
+                        height: 60,
+                        width: 60,
+                        child: const Icon(Icons.add, color: Colors.white)),
+                  ),
+                  onTap: () {
+                    Navigator.of(context).pushNamed('/new_post-screen',
+                        arguments: NewPostScreenArgs(null, false));
+                    setState(() {});
+                  },
+                ),
+              ]),
         body: _isInit
             ? const Center(child: CircularProgressIndicator())
             : filteredPostList.isEmpty

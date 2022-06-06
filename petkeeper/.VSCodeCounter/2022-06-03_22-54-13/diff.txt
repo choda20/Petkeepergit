@@ -1,0 +1,49 @@
+Date : 2022-06-03 22:54:13
+Directory : c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper
+Total : 20 files,  570 codes, 0 comments, 26 blanks, all 596 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| Dart     |         20 |        570 |          0 |         26 |        596 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++-------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                                    | files      | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                                       |         20 |        570 |          0 |         26 |        596 |
+| lib                                                                                                                     |         20 |        570 |          0 |         26 |        596 |
+| lib\providers                                                                                                           |          6 |        120 |          0 |          6 |        126 |
+| lib\screens                                                                                                             |          7 |        364 |          0 |         17 |        381 |
+| lib\screens\screen_args                                                                                                 |          1 |          5 |          0 |          2 |          7 |
+| lib\widgets                                                                                                             |          6 |         83 |          0 |          3 |         86 |
++-------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-------------------------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                                                                | language | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\main.dart                                      | Dart     |          3 |          0 |          0 |          3 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\providers\auth_provider.dart                   | Dart     |          5 |          0 |          0 |          5 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\providers\filters_provider.dart                | Dart     |          9 |          0 |          1 |         10 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\providers\posts_provider.dart                  | Dart     |         39 |          0 |          1 |         40 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\providers\rating_provider.dart                 | Dart     |          2 |          0 |          0 |          2 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\providers\request_provider.dart                | Dart     |         24 |          0 |          1 |         25 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\providers\user_provider.dart                   | Dart     |         41 |          0 |          3 |         44 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\screens\edit_user_screen.dart                  | Dart     |        233 |          0 |          9 |        242 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\screens\filters_screen.dart                    | Dart     |         77 |          0 |          4 |         81 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\screens\home_screen.dart                       | Dart     |         25 |          0 |          0 |         25 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\screens\post_screen.dart                       | Dart     |          5 |          0 |          0 |          5 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\screens\profile_screen.dart                    | Dart     |         18 |          0 |          2 |         20 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\screens\screen_args\edit_user_screen_args.dart | Dart     |          5 |          0 |          2 |          7 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\screens\user_listings_screen.dart              | Dart     |          1 |          0 |          0 |          1 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\widgets\AppDrawer.dart                         | Dart     |         -8 |          0 |          0 |         -8 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\widgets\auth_form.dart                         | Dart     |          2 |          0 |         -1 |          1 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\widgets\post_form.dart                         | Dart     |         56 |          0 |          3 |         59 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\widgets\post_item.dart                         | Dart     |         11 |          0 |          0 |         11 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\widgets\rating_item.dart                       | Dart     |          4 |          0 |          0 |          4 |
+| c:\Users\itayk\Desktop\flutter stuff\projects\Petkeepergit\petkeeper\lib\widgets\request_item.dart                      | Dart     |         18 |          0 |          1 |         19 |
+| Total                                                                                                                   |          |        570 |          0 |         26 |        596 |
++-------------------------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+

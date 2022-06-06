@@ -18,6 +18,7 @@ import 'screens/profile_screen.dart';
 import 'screens/user_listings_screen.dart';
 import 'providers/auth_provider.dart';
 import 'providers/posts_provider.dart';
+import 'screens/edit_user_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (ctx) => FiltersProvider())
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: "PetKeeper",
         theme: ThemeData(primaryColor: const Color(0xffee9617)),
         home: Container(
@@ -58,6 +60,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
         routes: {
+          EditUserScreen.routename: (ctx) => EditUserScreen(),
           JobScreen.routename: (ctx) => JobScreen(),
           AuthScreen.routename: (ctx) => AuthScreen(),
           homeScreen.routename: (ctx) => homeScreen(),

@@ -11,6 +11,8 @@ import '../models/post.dart';
 class PostsProvider with ChangeNotifier {
   List<Post> _posts = [];
 
+  // טענת כניסה: אין
+  // _posts :טענת יציאה: הפעולה שולפת את הנתונים המאוחסנים בקולקציית הפוסטים ומאחסנת אותם ברשימת הפוסטים של מחלקה זו
   Future<void> fetchPosts() async {
     QuerySnapshot querySnapshot =
         await FirebaseFirestore.instance.collection('posts').get();
@@ -33,15 +35,19 @@ class PostsProvider with ChangeNotifier {
     }
   }
 
+  // טענת כניסה: אין
+  // טענת יציאה: הפעולה מחזירה עותק של רשימת הפוסטים המקומית
   List<Post> get post {
     return [..._posts];
   }
 
+  // טענת כניסה: הפעולה מקבלת מחרוזת המאחסנת את המזהה של פוסט מסויים
+  // טענת יציאה: הפעולה מוחקת את הפוסט מקולקציית הפוסטים ומהרשימה המקומית
+  // בנוסף למחיקת התמונה של הפוסט מאחסון מסד הנתונים
   void deleteListing(String postId) {
     final postIndex = _posts.indexWhere((element) {
       return element.postId == postId;
     });
-
     FirebaseFirestore.instance
         .collection('posts')
         .doc(postId)
@@ -57,6 +63,9 @@ class PostsProvider with ChangeNotifier {
     });
   }
 
+  // טענת כניסה: הפעולה מקבלת משתנה מסוג פוסט ותמונה המהווה תמונת פוסט
+  // טענת יציאה: הפעולה שמורת את נתוני הפוסט במסד הנתונים ומעלה את התמונה לאחסון במסד הנתונים
+  // בנוסף, הפעולה שומרת את הפוסט החדש ברשימה המקומית ומודיעה למשתנים המאזינים לה שהתרחש שינוי במחלקה
   void addPost(Post newPost, XFile postImage) {
     late String postId;
     final docPath = FirebaseFirestore.instance.collection('posts');
@@ -91,6 +100,9 @@ class PostsProvider with ChangeNotifier {
     });
   }
 
+  // טענת כניסה: הפעולה מקבלת תמונה, מזהה פוסט ומשתנה מסוג פוסט
+  // טענת יציאה: הפעולה משנה את תמונת הפוסט(שהוכנס המזהה שלו) לתמונה זמנית בנוסף למחיקת התמונה הקודמת והחלפתה בתמונה שהפעולה קיבלה
+  // changePost הפעולה מעבירה את מזהה הפוסט ואת המשתנה מסוג פוסט שקיבלה לפעולה
   void replaceImage(XFile postImage, String postId, Post newPost) {
     final postIndex = _posts.indexWhere((element) => element.postId == postId);
     _posts[postIndex].downloadUrl =
@@ -112,6 +124,9 @@ class PostsProvider with ChangeNotifier {
     });
   }
 
+  // טענת כניסה: הפעולה מקבלת משתנה מסוג פוסט ומזהה פוסט
+  // טענת יציאה: הפעולה מעדכנת את ערכי הפוסט(שהוכנס המזהה שלו) ברשימה המקומית לערכי המשתנה מסוג פוסט שקיבלה
+  // בנוסף הפעולה מעדכנת את ערכי מסמך הפוסט במסד הנתונים לערכי המשתנה שקיבלה ואז מודיעה למשתנים המאזינים שהתחרש שינוי במחלקה
   void changePost(Post newPost, String postId) {
     final postIndex = _posts.indexWhere((element) {
       return element.postId == postId;
@@ -143,6 +158,9 @@ class PostsProvider with ChangeNotifier {
     });
   }
 
+  // טענת כניסה: הפעולה מקבלת משתנה מסוג פילטר, רשימת פוסטים ומזהה משתמש השייך למשתמש הנוכחי
+  // טענת יציאה: הפעולה מחזירה רשימת פוסטים התואמים את ערכי המשתנה מסוג פילטר, אינם שייכים למשתמש הנוכחי
+  // ושתאריך הסיום והתתחלה שלהם נמצאים בין תאריך ההתחלה והסיום של המשתנה מסוג פילטר
   List<Post> filterResults(
       Filter filter, List<Post> unFilteredPosts, String uid) {
     bool waterReset = false;
@@ -228,6 +246,8 @@ class PostsProvider with ChangeNotifier {
     return _filtered;
   }
 
+  // טענת כניסה: הפעולה מקבלת רשימה של מזההי פוסטים
+  // טענת יציאה: הפעולה מחזירה רשימת פוסטים המורכבת מהפוסטים השייכים למזהי הפוסטים
   List<Post> getPostsById(List<String> postIds) {
     List<Post> posts = [];
     int index = -1;
@@ -240,12 +260,16 @@ class PostsProvider with ChangeNotifier {
     return posts;
   }
 
+  // טענת כניסה: הפעולה מקבלת מזהה של משתמש
+  // טענת יציאה: הפעולה מחזירה את הפוסטים של המשתמש
   List<Post> getUserPosts(String userId) {
     List<Post> userPosts =
         _posts.where((element) => element.userId == userId).toList();
     return userPosts;
   }
 
+  // טענת כניסה: הפעולה מקבלת רשמית פוסטים
+  // טענת יציאה: הפעולה מחזירה רשימה של פוסטים הפגי תוקף מרשימת הפוסטים
   List<Post> getPastPosts(List<Post> postList) {
     final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
     List<Post> pastPosts = [];
@@ -259,6 +283,8 @@ class PostsProvider with ChangeNotifier {
     return pastPosts;
   }
 
+  // טענת כניסה: הפעולה מקבלת רשימת פוסטים
+  // טענת יציאה: הפעולה מחזירה רשימה של פוסטים רלוונטים מרשימת הפוסטים
   List<Post> getOngingPosts(List<Post> postList) {
     final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
     List<Post> ongingPosts = [];
@@ -270,5 +296,20 @@ class PostsProvider with ChangeNotifier {
       }
     }
     return ongingPosts;
+  }
+
+  // טענת כניסה: אין
+  // טענת יציאה: הפעולה מחזירה רשימה של מזההי פוסטים פגי תוקף
+  List<String> getExpiredPostIds() {
+    List<String> ids = [];
+    final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    for (var post in _posts) {
+      DateTime endDate = DateTime.parse(post.endingDate);
+      if (endDate.isBefore(DateTime.now()) &&
+          DateFormat('yyyy-MM-dd').format(endDate) != date) {
+        ids.add(post.postId);
+      }
+    }
+    return ids;
   }
 }

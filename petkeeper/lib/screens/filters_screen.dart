@@ -27,6 +27,9 @@ class _FiltersScreenState extends State<FiltersScreen> {
   TextEditingController _salaryController = TextEditingController();
   List<String> values = ["All", '0', '1', "2", "3", "4", "5", "6"];
 
+  // טענת כניסה: הפעולה מקבלת מחרוזת
+  // "All"טענת יציאה: אם המחרוזת שווה ל
+  // הפעולה משנה את הערך שלה ל"7". אחרת הפעולה לא עושה כלום
   String allToSeven(String value) {
     if (value == 'All') {
       value = '7';
@@ -34,6 +37,9 @@ class _FiltersScreenState extends State<FiltersScreen> {
     return value;
   }
 
+  // טענת כניסה: הפעולה מקבלת מחרוזת
+  // "All"טענת יציאה: אם ערך המחרוזת הוא "7" הפעולה משנה את הערך ל
+  // אחרת הפעולה לא עושה כלום
   String sevenToAll(String value) {
     if (value == '7') {
       value = 'All';
@@ -41,6 +47,9 @@ class _FiltersScreenState extends State<FiltersScreen> {
     return value;
   }
 
+  // טענת כניסה: אין
+  // טענת יציאה: הפעולה בודקת אם הערך שהכניס המשתמש לשדה המשכורת
+  // הוא מספר שלם, אם כן תחזיר הפעולה "ריק" ואם לא תחזיר הפעולה הודעת שגיאה
   String? get _salaryError {
     final text = _salaryController.text;
     if (text.isEmpty) {
@@ -49,9 +58,13 @@ class _FiltersScreenState extends State<FiltersScreen> {
     if (int.tryParse(text) == null) {
       return 'enter a valid number';
     }
+
     return null;
   }
 
+  // טענת כניסה: אין
+  // ,טענת יציאה: הפעולה בודקת אם הערך שהכניס המשתמש לשדה תאריך הסיום הוא תאריך תקין
+  //  המאחר את תאריך ההתחלה. אם כן תחזיר הפעולה "ריק" ואם לא תחזיר הפעולה הודעת שגיאה
   String? get _endingDateError {
     final text = _endingDateController.text;
     DateTime? end = DateTime.tryParse(text);
@@ -63,6 +76,9 @@ class _FiltersScreenState extends State<FiltersScreen> {
     return null;
   }
 
+  // טענת כניסה: אין
+  // ,טענת יציאה: הפעולה בודקת אם הערך שהכניס המשתמש לשדה התאריך ההתחלתי הוא תאריך תקין
+  // המקדים את תאריך הסיום. אם כן תחזיר הפעולה "ריק" ואם לא תחזיר הפעולה הודעת שגיאה
   String? get _startDateError {
     final text = _startingDateController.text;
     DateTime? start = DateTime.tryParse(text);
@@ -74,6 +90,9 @@ class _FiltersScreenState extends State<FiltersScreen> {
     return null;
   }
 
+  // טענת כניסה: הפעולה מקבלת מספר
+  // טענת יציאה: הפעולה מחזירה שדה המאפשר לבחור תאריך בהתאם למספר שסופק לה
+  // אם המספר הוא 0 יוחזר שדה תאריך התחלתי ואם הוא 1 יוחזר שדה תאריך סיום
   TextField DatePicker(int indicator) {
     return TextField(
       controller:

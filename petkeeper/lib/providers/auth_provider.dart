@@ -15,6 +15,9 @@ class AuthProvider with ChangeNotifier {
   late String _profilePictureUrl;
   late String _phoneNumber;
 
+// טענת כניסה: הפעולה מקבלת פרטי משתמש, קונטקסט, ומשתנה בוליאני שמסמן לאפליקציה האם המשתמש מנסה להירשם או להתחבר לאפליקציה
+// .טענת יציאה: המשתמש נרשם או מתחבר לשרת הפיירבייס והמזהה שלו נשמר למחלקה זו, במידה והוא נרשם פרטי המשתמש מעודכנים לקולקציית המשתמשים בנוסף
+// אם הפעולה נתקלת בבעיה בעת ההתחברות וישנה שגיאה תוצג הודעת שגיאה מתאימה
   void submitAuthForm(
     XFile? profilePicture,
     String name,
@@ -23,7 +26,6 @@ class AuthProvider with ChangeNotifier {
     String password,
     BuildContext ctx,
     bool isLogin,
-    bool isLoading,
   ) {
     try {
       if (isLogin) {
@@ -73,14 +75,20 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  // טענת כניסה: אין
+  // טענת יציאה: הפעולה מחזירה את המייל של המשתמש הנוכחי
   String? get email {
     return _email;
   }
 
+  // טענת כניסה: אין
+  // טענת יציאה: הפעולה מחזירה את שם המשתמש של המשתמש הנוכחי
   String? get name {
     return _username;
   }
 
+  // טענת כניסה: אין
+  // טענת יציאה: הפונקציה שולפת את פרטי המשתמש הנוכחי מקולקציית המשתמשים ומעדכנת את פרטי המשתמש הנוכחי בהתאם
   Future<void> fetchExtraUserInfo() async {
     _uid = _auth.currentUser!.uid;
     user = _auth.currentUser!;

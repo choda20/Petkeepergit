@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
+import '../models/post.dart';
 import '../widgets/gradient_icons.dart';
 import '../widgets/request_item.dart';
 import '../providers/request_provider.dart';
@@ -123,10 +124,10 @@ class _UserListingsState extends State<UserListings> {
                                         bottom: 10, top: 10),
                                     itemBuilder: (BuildContext ctx, index) {
                                       return RequestItem(
-                                          acceptedRequestsPosts[index],
-                                          acceptedRequests[index],
-                                          true,
-                                          true);
+                                        acceptedRequestsPosts[index],
+                                        acceptedRequests[index],
+                                        true,
+                                      );
                                     }),
                               )
                             : _choosenData == 2 && acceptedRequests.isEmpty
@@ -153,10 +154,10 @@ class _UserListingsState extends State<UserListings> {
                                             itemBuilder:
                                                 (BuildContext ctx, index) {
                                               return RequestItem(
-                                                  pendingRequestsPosts[index],
-                                                  pendingRequests[index],
-                                                  false,
-                                                  false);
+                                                pendingRequestsPosts[index],
+                                                pendingRequests[index],
+                                                false,
+                                              );
                                             }),
                                       ));
   }
